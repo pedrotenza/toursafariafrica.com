@@ -1,0 +1,21 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Safari Booking</title>
+</head>
+<body>
+    <div style="float:left; width: 20%;">
+        <h3>All Safaris</h3>
+        <ul>
+            {% for safari in safaris %}
+                <li><a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div style="margin-left: 25%;">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

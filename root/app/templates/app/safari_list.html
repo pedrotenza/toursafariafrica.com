@@ -1,0 +1,9 @@
+{% extends 'app/base.html' %}
+{% block content %}
+<h1>Safari Index</h1>
+<ul>
+    {% for safari in safaris %}
+        <li><a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}
