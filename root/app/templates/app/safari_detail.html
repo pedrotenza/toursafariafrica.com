@@ -1,0 +1,17 @@
+{% extends 'app/base.html' %}
+{% block content %}
+<h1>{{ safari.name }}</h1>
+<p>{{ safari.description }}</p>
+<img src="{{ safari.image.url }}" width="300"/>
+
+<h2>Book this Safari</h2>
+<form method="POST">
+    {% csrf_token %}
+    Name: <input type="text" name="name"><br>
+    Email: <input type="email" name="email"><br>
+    Date: <input type="date" name="date"><br>
+    <button type="submit">Book</button>
+</form>
+{% endblock %}
+
+
