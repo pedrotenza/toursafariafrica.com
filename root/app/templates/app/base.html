@@ -1,21 +1,21 @@
 
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Safari Booking</title>
-</head>
-<body>
-    <div style="float:left; width: 20%;">
-        <h3>All Safaris</h3>
+<div style="float:left; width: 20%;">
+    <h3>Safari Index</h3>
+    {% for region in regions %}
+        <strong>{{ region.name }}</strong>
         <ul>
-            {% for safari in safaris %}
-                <li><a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a></li>
+            {% for sub in region.subregions.all %}
+                <li>
+                    {{ sub.name }}
+                    <ul>
+                        {% for safari in sub.safari_set.all %}
+                            <li>
+                                <a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
             {% endfor %}
         </ul>
-    </div>
-    <div style="margin-left: 25%;">
-        {% block content %}{% endblock %}
-    </div>
-</body>
-</html>
+    {% endfor %}
+</div>
