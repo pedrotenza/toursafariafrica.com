@@ -1,12 +1,19 @@
 from django.contrib import admin
-from .models import Safari, Booking, Region, SubRegion
+from .models import Safari, Booking, Region, SubRegion, SafariImage
 
-# Admin para Safari
+# Inline para imágenes de Safari
+class SafariImageInline(admin.TabularInline):
+    model = SafariImage
+    extra = 1
+    max_num = 10  # Opcional: limitar cantidad de imágenes por safari
+
+# Admin para Safari con imágenes
 @admin.register(Safari)
 class SafariAdmin(admin.ModelAdmin):
-    list_display = ('name', 'subregion')  # Mostrar subregión también
+    list_display = ('name', 'subregion')
     list_filter = ('subregion',)
     search_fields = ('name',)
+    inlines = [SafariImageInline]
 
 # Admin para Booking
 @admin.register(Booking)

@@ -1,17 +1,63 @@
 {% extends 'app/base.html' %}
 {% block content %}
-<h1>{{ safari.name }}</h1>
-<p>{{ safari.description }}</p>
-<img src="{{ safari.image.url }}" width="300"/>
+  <h1>{{ safari.name }}</h1>
 
-<h2>Book this Safari</h2>
-<form method="POST">
-    {% csrf_token %}
-    Name: <input type="text" name="name"><br>
-    Email: <input type="email" name="email"><br>
-    Date: <input type="date" name="date"><br>
-    <button type="submit">Book</button>
-</form>
+  <!-- Image Gallery -->
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+    {% for img in safari.images.all %}
+      <img src="{{ img.image.url }}" alt="Image of {{ safari.name }}" width="300" style="border-radius: 8px;">
+    {% empty %}
+      <p>No images available for this safari.</p>
+    {% endfor %}
+  </div>
+
+
+  <!-- Highlights -->
+  {% if safari.highlights %}
+    <section style="margin-bottom: 20px;">
+      <h2>Highlights</h2>
+      <p>{{ safari.highlights }}</p>
+    </section>
+  {% endif %}
+
+  <!-- Itinerary -->
+  {% if safari.itinerary %}
+    <section style="margin-bottom: 20px;">
+      <h2>Itinerary</h2>
+      <p>{{ safari.itinerary }}</p>
+    </section>
+  {% endif %}
+
+    <!-- Description -->
+    <section style="margin-bottom: 20px;">
+        <h2>Description</h2>
+        <p>{{ safari.description }}</p>
+      </section>
+    
+
+  <!-- Booking Form -->
+  <section>
+    <h2>Book This Safari</h2>
+    <form method="POST">
+      {% csrf_token %}
+      <div>
+        <label for="id_name">Name:</label>
+        <input type="text" id="id_name" name="name" required>
+      </div>
+      <div>
+        <label for="id_email">Email:</label>
+        <input type="email" id="id_email" name="email" required>
+      </div>
+      <div>
+        <label for="id_date">Date:</label>
+        <input type="date" id="id_date" name="date" required>
+      </div>
+      <button type="submit" style="margin-top: 10px;">Book Now</button>
+    </form>
+  </section>
 {% endblock %}
+
+
+
 
 

@@ -66,7 +66,7 @@
     </div>
 
     <div class="safari-menu">
-        <h3><a href="{% url 'home' %}">🏠 Inicio</a></h3> <!-- 👈 ENLACE AL HOME AÑADIDO AQUÍ -->
+        <h3><a href="{% url 'home' %}">🏠 Home</a></h3>
         {% for region in regions %}
             <strong>{{ region.name }}</strong>
             <ul>
@@ -74,7 +74,7 @@
                     <li>
                         {{ sub.name }}
                         <ul>
-                            {% for safari in sub.safari_set.all %}
+                            {% for safari in sub.safaris.all %}
                                 <li>
                                     <a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a>
                                 </li>
@@ -93,4 +93,3 @@
     </div>
 </body>
 </html>
-
