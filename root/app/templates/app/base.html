@@ -66,7 +66,7 @@
     </div>
 
     <div class="safari-menu">
-        <h3>Safaris</h3>
+        <h3><a href="{% url 'home' %}">🏠 Inicio</a></h3> <!-- 👈 ENLACE AL HOME AÑADIDO AQUÍ -->
         {% for region in regions %}
             <strong>{{ region.name }}</strong>
             <ul>
@@ -93,3 +93,4 @@
     </div>
 </body>
 </html>
+
