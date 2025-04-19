@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Safari, Booking
 
@@ -19,3 +20,5 @@ def safari_detail(request, safari_id):
         )
         return redirect('safari_list')
     return render(request, 'app/safari_detail.html', {'safari': safari})
+    
+    
