@@ -3,18 +3,22 @@ from .models import Safari, Booking
 
 # Vista para la página de inicio
 def home(request):
-    return render(request, 'app/home.html')  # Asegúrate de tener este archivo 'home.html' en el directorio correcto
+    return render(request, 'app/home.html')
 
 # Vista para la lista de safaris
 def safari_list(request):
-    safaris = Safari.objects.all()  # Obtén todos los safaris de la base de datos
+    safaris = Safari.objects.all()
     return render(request, 'app/safari_list.html', {'safaris': safaris})
 
 # Vista para los detalles de un safari en particular
 def safari_detail(request, safari_id):
-    safari = get_object_or_404(Safari, pk=safari_id)  # Obtiene el safari por su id o muestra un 404 si no lo encuentra
+    safari = get_object_or_404(Safari, pk=safari_id)
+
+    # Extraer y formatear los puntos destacados para cada uno en una nueva línea
+    highlight_lines = safari.highlights.split('.') if safari.highlights else []
+    highlight_lines = [line.strip() for line in highlight_lines if line.strip()]
+
     if request.method == 'POST':
-        # Si es un POST, crea una nueva reserva para el safari
         name = request.POST['name']
         email = request.POST['email']
         date = request.POST['date']
@@ -24,5 +28,9 @@ def safari_detail(request, safari_id):
             client_email=email,
             date=date
         )
-        return redirect('safari_list')  # Después de guardar la reserva, redirige a la lista de safaris
-    return render(request, 'app/safari_detail.html', {'safari': safari})
+        return redirect('safari_list')
+
+    return render(request, 'app/safari_detail.html', {
+        'safari': safari,
+        'highlight_lines': highlight_lines
+    })

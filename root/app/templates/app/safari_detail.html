@@ -1,4 +1,5 @@
 {% extends 'app/base.html' %}
+
 {% block content %}
   <h1>{{ safari.name }}</h1>
 
@@ -11,12 +12,18 @@
     {% endfor %}
   </div>
 
-
   <!-- Highlights -->
-  {% if safari.highlights %}
+  {% if highlight_lines %}
     <section style="margin-bottom: 20px;">
       <h2>Highlights</h2>
-      <p>{{ safari.highlights }}</p>
+      <ul style="list-style-type: none; padding-left: 0;">
+        {% for line in highlight_lines %}
+          <li style="position: relative; padding-left: 25px; margin-bottom: 10px;">
+            <span style="position: absolute; left: 0; top: 0;">&#9733;</span> <!-- Estrella -->
+            {{ line }}
+          </li>
+        {% endfor %}
+      </ul>
     </section>
   {% endif %}
 
@@ -28,12 +35,11 @@
     </section>
   {% endif %}
 
-    <!-- Description -->
-    <section style="margin-bottom: 20px;">
-        <h2>Description</h2>
-        <p>{{ safari.description }}</p>
-      </section>
-    
+  <!-- Description -->
+  <section style="margin-bottom: 20px;">
+    <h2>Description</h2>
+    <p>{{ safari.description }}</p>
+  </section>
 
   <!-- Booking Form -->
   <section>
@@ -56,8 +62,3 @@
     </form>
   </section>
 {% endblock %}
-
-
-
-
-
