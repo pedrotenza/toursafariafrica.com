@@ -19,7 +19,7 @@
       <ul style="list-style-type: none; padding-left: 0;">
         {% for line in highlight_lines %}
           <li style="position: relative; padding-left: 25px; margin-bottom: 10px;">
-            <span style="position: absolute; left: 0; top: 0;">&#9733;</span> <!-- Estrella -->
+            <span style="position: absolute; left: 0; top: 0;">&#9733;</span>
             {{ line }}
           </li>
         {% endfor %}
@@ -28,12 +28,21 @@
   {% endif %}
 
   <!-- Itinerary -->
-  {% if safari.itinerary %}
-    <section style="margin-bottom: 20px;">
-      <h2>Itinerary</h2>
-      <p>{{ safari.itinerary }}</p>
-    </section>
-  {% endif %}
+  <section style="margin-bottom: 20px;">
+    <h2>Itinerary</h2>
+    {% if safari.itinerary_items.all %}
+      <ul style="list-style: none; padding-left: 0;">
+        {% for item in safari.itinerary_items.all %}
+          <li style="margin-bottom: 8px; display: flex; align-items: center;">
+            <span style="min-width: 70px; font-weight: bold;">{{ item.time|time:"H:i" }}</span>
+            <span>{{ item.description }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No itinerary available for this safari.</p>
+    {% endif %}
+  </section>
 
   <!-- Description -->
   <section style="margin-bottom: 20px;">
