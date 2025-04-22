@@ -22,7 +22,7 @@ class Safari(models.Model):
     name        = models.CharField(max_length=100)
     description = models.TextField()
     highlights  = models.TextField(blank=True)
-    itinerary   = models.TextField(blank=True)
+    #itinerary   = models.TextField(blank=True)
     subregion   = models.ForeignKey(
         SubRegion,
         on_delete=models.CASCADE,
