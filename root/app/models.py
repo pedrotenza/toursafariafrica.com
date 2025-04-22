@@ -17,6 +17,7 @@ class SubRegion(models.Model):
     def __str__(self):
         return f"{self.region.name} – {self.name}"
 
+
 class Safari(models.Model):
     name        = models.CharField(max_length=100)
     description = models.TextField()
@@ -55,3 +56,19 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.client_name} – {self.date}"
+
+
+class SafariItineraryItem(models.Model):
+    safari = models.ForeignKey(
+        Safari,
+        on_delete=models.CASCADE,
+        related_name='itinerary_items'
+    )
+    time = models.TimeField()
+    description = models.CharField(max_length=255)
+
+    class Meta:
+        ordering = ['time']
+
+    def __str__(self):
+        return f"{self.time.strftime('%H:%M')} – {self.description}"
