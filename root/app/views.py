@@ -1,9 +1,21 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Safari, Booking
 
+
+
+
+from .models import HomePage
+
+def home(request):
+    homepage = HomePage.objects.first()  # Se asume que solo hay una entrada
+    return render(request, 'app/home.html', {'homepage': homepage})
+
+
+"""
 # Vista para la página de inicio
 def home(request):
     return render(request, 'app/home.html')
+""" 
 
 # Vista para la lista de safaris
 def safari_list(request):

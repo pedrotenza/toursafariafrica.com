@@ -1,7 +1,65 @@
-
 {% extends 'app/base.html' %}
 
 {% block content %}
-<h1>Welcome to TourSafariAfrica.com </h1>
-<p>Select a region from the right to explore our available safaris.</p>
+
+<!-- 🟠 Hero Section -->
+<section class="hero" style="position: relative; text-align: center; color: white;">
+  {% if homepage.hero_video_url %}
+    <video autoplay loop muted style="width: 100%; height: auto; object-fit: cover;">
+      <source src="{{ homepage.hero_video_url }}" type="video/mp4">
+    </video>
+  {% elif homepage.hero_image %}
+    <img src="{{ homepage.hero_image.url }}" alt="Safari Hero" style="width: 100%; height: auto;">
+  {% endif %}
+  <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); max-width: 80%;">
+    <h1 style="font-size: 3em;">{{ homepage.hero_title }}</h1>
+    <p style="font-size: 1.5em;">{{ homepage.hero_subtitle }}</p>
+  </div>
+</section>
+
+<!-- 🟠 ¿Por qué elegirnos? -->
+<section style="padding: 40px 20px; background-color: #fff4e6;">
+  <h2 style="text-align: center; margin-bottom: 30px;">{{ homepage.why_choose_title }}</h2>
+  <div class="cards" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+
+    <div class="card" style="width: 220px; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s;">
+      <h3>🧭 {{ homepage.experience_title }}</h3>
+      <p>{{ homepage.experience_description }}</p>
+    </div>
+
+    <div class="card" style="width: 220px; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s;">
+      <h3>🌍 {{ homepage.responsible_tourism_title }}</h3>
+      <p>{{ homepage.responsible_tourism_description }}</p>
+    </div>
+
+    <div class="card" style="width: 220px; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s;">
+      <h3>🦁 {{ homepage.expert_guides_title }}</h3>
+      <p>{{ homepage.expert_guides_description }}</p>
+    </div>
+
+    <div class="card" style="width: 220px; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: all 0.3s;">
+      <h3>🧳 {{ homepage.custom_trips_title }}</h3>
+      <p>{{ homepage.custom_trips_description }}</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- 🟠 Destinos principales -->
+<section style="padding: 40px 20px; background-color: #f0f8ff;">
+  <h2 style="text-align: center;">{{ homepage.destinations_title }}</h2>
+  {% if homepage.destinations_image %}
+    <div style="text-align: center; margin-top: 20px;">
+      <img src="{{ homepage.destinations_image.url }}" alt="Mapa de destinos" style="max-width: 100%; height: auto; border-radius: 10px;">
+    </div>
+  {% endif %}
+  <!-- Aquí puedes agregar un mapa interactivo o una grilla en columnas si lo deseas -->
+</section>
+
 {% endblock %}
+
+
+
+
+
+
