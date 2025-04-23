@@ -72,3 +72,38 @@ class SafariItineraryItem(models.Model):
 
     def __str__(self):
         return f"{self.time.strftime('%H:%M')} – {self.description}"
+
+
+
+
+
+class HomePage(models.Model):
+    hero_title = models.CharField(max_length=200)
+    hero_subtitle = models.CharField(max_length=200)
+    hero_image = models.ImageField(upload_to='homepage/hero/', blank=True, null=True)
+    hero_video_url = models.URLField(blank=True, null=True)
+    
+    why_choose_title = models.CharField(max_length=200)
+    
+    # Beneficios
+    experience_title = models.CharField(max_length=100)
+    experience_description = models.TextField()
+
+    responsible_tourism_title = models.CharField(max_length=100)
+    responsible_tourism_description = models.TextField()
+
+    expert_guides_title = models.CharField(max_length=100)
+    expert_guides_description = models.TextField()
+
+    custom_trips_title = models.CharField(max_length=100)
+    custom_trips_description = models.TextField()
+
+    destinations_title = models.CharField(max_length=200)
+    destinations_image = models.ImageField(upload_to='homepage/destinations/', blank=True, null=True)
+
+    def __str__(self):
+        return "Home Page Configuration"
+
+    class Meta:
+        verbose_name = "Home Page Configuration"
+        verbose_name_plural = "Home Page Configurations"
