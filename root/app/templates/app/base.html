@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Safari Booking</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'app/css/styles.css' %}"> 
+    
     <style>
         body {
             margin: 0;
@@ -57,6 +61,38 @@
             color: #e74c3c;
             text-decoration: underline;
         }
+
+        /* --- Agregado: Estilos para las tarjetas --- */
+        .cards {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            width: 220px;
+            padding: 20px;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            background-color: #f4f4f4;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -93,3 +129,4 @@
     </div>
 </body>
 </html>
+
