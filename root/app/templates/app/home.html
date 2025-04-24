@@ -4,9 +4,10 @@
 
 <!-- 🟠 Hero Section -->
 <section class="hero" style="position: relative; text-align: center; color: white;">
-  {% if homepage.hero_video_url %}
+  {% if homepage.hero_video %}
     <video autoplay loop muted style="width: 100%; height: auto; object-fit: cover;">
-      <source src="{{ homepage.hero_video_url }}" type="video/mp4">
+      <source src="{{ homepage.hero_video.url }}" type="video/mp4">
+      Tu navegador no soporta la etiqueta de video.
     </video>
   {% elif homepage.hero_image %}
     <img src="{{ homepage.hero_image.url }}" alt="Safari Hero" style="width: 100%; height: auto;">

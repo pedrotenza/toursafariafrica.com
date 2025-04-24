@@ -1,11 +1,12 @@
-
 from django.db import models
+
 
 class Region(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
+
 
 class SubRegion(models.Model):
     region = models.ForeignKey(
@@ -20,11 +21,10 @@ class SubRegion(models.Model):
 
 
 class Safari(models.Model):
-    name        = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
     description = models.TextField()
-    highlights  = models.TextField(blank=True)
-    #itinerary   = models.TextField(blank=True)
-    subregion   = models.ForeignKey(
+    highlights = models.TextField(blank=True)
+    subregion = models.ForeignKey(
         SubRegion,
         on_delete=models.CASCADE,
         related_name='safaris'
@@ -33,26 +33,28 @@ class Safari(models.Model):
     def __str__(self):
         return self.name
 
+
 class SafariImage(models.Model):
     safari = models.ForeignKey(
         Safari,
         on_delete=models.CASCADE,
         related_name='images'
     )
-    image  = models.ImageField(upload_to='safaris/')
+    image = models.ImageField(upload_to='safaris/')
 
     def __str__(self):
         return f"Image for {self.safari.name}"
 
+
 class Booking(models.Model):
-    safari                = models.ForeignKey(
+    safari = models.ForeignKey(
         Safari,
         on_delete=models.CASCADE,
         related_name='bookings'
     )
-    date                  = models.DateField()
-    client_name           = models.CharField(max_length=100)
-    client_email          = models.EmailField()
+    date = models.DateField()
+    client_name = models.CharField(max_length=100)
+    client_email = models.EmailField()
     confirmed_by_provider = models.BooleanField(default=False)
 
     def __str__(self):
@@ -75,17 +77,21 @@ class SafariItineraryItem(models.Model):
         return f"{self.time.strftime('%H:%M')} – {self.description}"
 
 
-
-
-
 class HomePage(models.Model):
     hero_title = models.CharField(max_length=200)
     hero_subtitle = models.CharField(max_length=200)
     hero_image = models.ImageField(upload_to='homepage/hero/', blank=True, null=True)
-    hero_video_url = models.URLField(blank=True, null=True)
-    
+
+    # Campo de video subido localmente
+    hero_video = models.FileField(
+        upload_to='homepage/hero/videos/',
+        blank=True,
+        null=True,
+        help_text="Sube un archivo de video (formato .mp4 recomendado)"
+    )
+
     why_choose_title = models.CharField(max_length=200)
-    
+
     # Beneficios
     experience_title = models.CharField(max_length=100)
     experience_description = models.TextField()
