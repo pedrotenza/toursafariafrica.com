@@ -1,6 +1,7 @@
 from django.db import models
 
 
+
 class Region(models.Model):
     name = models.CharField(max_length=100)
 
@@ -20,6 +21,15 @@ class SubRegion(models.Model):
         return f"{self.region.name} – {self.name}"
 
 
+class Provider(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    whatsapp_number = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name
+
+
 class Safari(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -29,9 +39,17 @@ class Safari(models.Model):
         on_delete=models.CASCADE,
         related_name='safaris'
     )
+    provider = models.ForeignKey(
+        'Provider',  # Relacionando con el modelo Provider
+        on_delete=models.CASCADE,
+        related_name='safaris',
+        null=True,  # Por si tienes safaris previos que no tengan proveedor
+        blank=True  # Permite que este campo sea opcional
+    )
 
     def __str__(self):
         return self.name
+
 
 
 class SafariImage(models.Model):
@@ -114,3 +132,4 @@ class HomePage(models.Model):
     class Meta:
         verbose_name = "Home Page Configuration"
         verbose_name_plural = "Home Page Configurations"
+
