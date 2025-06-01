@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class Region(models.Model):
     name = models.CharField(max_length=100)
 
@@ -40,16 +39,15 @@ class Safari(models.Model):
         related_name='safaris'
     )
     provider = models.ForeignKey(
-        'Provider',  # Relacionando con el modelo Provider
+        'Provider',
         on_delete=models.CASCADE,
         related_name='safaris',
-        null=True,  # Por si tienes safaris previos que no tengan proveedor
-        blank=True  # Permite que este campo sea opcional
+        null=True,
+        blank=True
     )
 
     def __str__(self):
         return self.name
-
 
 
 class SafariImage(models.Model):
@@ -76,7 +74,8 @@ class Booking(models.Model):
     confirmed_by_provider = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.client_name} – {self.date}"
+        status = "✔️ Confirmado" if self.confirmed_by_provider else "❌ Pendiente"
+        return f"{self.client_name} – {self.date} ({status})"
 
 
 class SafariItineraryItem(models.Model):
@@ -100,7 +99,6 @@ class HomePage(models.Model):
     hero_subtitle = models.CharField(max_length=200)
     hero_image = models.ImageField(upload_to='homepage/hero/', blank=True, null=True)
 
-    # Campo de video subido localmente
     hero_video = models.FileField(
         upload_to='homepage/hero/videos/',
         blank=True,
@@ -110,7 +108,6 @@ class HomePage(models.Model):
 
     why_choose_title = models.CharField(max_length=200)
 
-    # Beneficios
     experience_title = models.CharField(max_length=100)
     experience_description = models.TextField()
 
@@ -132,4 +129,3 @@ class HomePage(models.Model):
     class Meta:
         verbose_name = "Home Page Configuration"
         verbose_name_plural = "Home Page Configurations"
-
