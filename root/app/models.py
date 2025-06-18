@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class Region(models.Model):
     name = models.CharField(max_length=100)
 
@@ -43,13 +42,12 @@ class Safari(models.Model):
         'Provider',  # Relacionando con el modelo Provider
         on_delete=models.CASCADE,
         related_name='safaris',
-        null=True,  # Por si tienes safaris previos que no tengan proveedor
-        blank=True  # Permite que este campo sea opcional
+        null=True,  # Opcional
+        blank=True
     )
 
     def __str__(self):
         return self.name
-
 
 
 class SafariImage(models.Model):
@@ -73,6 +71,9 @@ class Booking(models.Model):
     date = models.DateField()
     client_name = models.CharField(max_length=100)
     client_email = models.EmailField()
+    client_phone = models.CharField(max_length=20)            # Teléfono
+    client_nationality = models.CharField(max_length=50)      # Nacionalidad
+    client_age = models.PositiveIntegerField()                # Edad
     confirmed_by_provider = models.BooleanField(default=False)
 
     def __str__(self):
@@ -100,7 +101,6 @@ class HomePage(models.Model):
     hero_subtitle = models.CharField(max_length=200)
     hero_image = models.ImageField(upload_to='homepage/hero/', blank=True, null=True)
 
-    # Campo de video subido localmente
     hero_video = models.FileField(
         upload_to='homepage/hero/videos/',
         blank=True,
@@ -110,7 +110,6 @@ class HomePage(models.Model):
 
     why_choose_title = models.CharField(max_length=200)
 
-    # Beneficios
     experience_title = models.CharField(max_length=100)
     experience_description = models.TextField()
 
