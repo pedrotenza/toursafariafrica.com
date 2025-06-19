@@ -6,6 +6,7 @@ cd "E:\Visual Studio Code\toursafariafrica.com"
 safari-site-env\Scripts\Activate.ps1
 cd "E:\Visual Studio Code\toursafariafrica.com\root"
 python manage.py runserver
+
  
 python manage.py makemigrations
 python manage.py migrate

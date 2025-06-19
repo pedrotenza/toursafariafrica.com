@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone  # 🆕 Necesario para manejar timestamps
 
 
 class Region(models.Model):
@@ -39,10 +40,10 @@ class Safari(models.Model):
         related_name='safaris'
     )
     provider = models.ForeignKey(
-        'Provider',  # Relacionando con el modelo Provider
+        'Provider',
         on_delete=models.CASCADE,
         related_name='safaris',
-        null=True,  # Opcional
+        null=True,
         blank=True
     )
 
@@ -71,10 +72,11 @@ class Booking(models.Model):
     date = models.DateField()
     client_name = models.CharField(max_length=100)
     client_email = models.EmailField()
-    client_phone = models.CharField(max_length=20)            # Teléfono
-    client_nationality = models.CharField(max_length=50)      # Nacionalidad
-    client_age = models.PositiveIntegerField()                # Edad
+    client_phone = models.CharField(max_length=20)
+    client_nationality = models.CharField(max_length=50)
+    client_age = models.PositiveIntegerField()
     confirmed_by_provider = models.BooleanField(default=False)
+    provider_response_date = models.DateTimeField(null=True, blank=True)  # 🆕 Fecha/hora de confirmación/rechazo
 
     def __str__(self):
         return f"{self.client_name} – {self.date}"
@@ -131,4 +133,3 @@ class HomePage(models.Model):
     class Meta:
         verbose_name = "Home Page Configuration"
         verbose_name_plural = "Home Page Configurations"
-
