@@ -5,7 +5,8 @@ Discover Botswana and its wildlife. Book your unforgettable safari adventure tod
 cd "E:\Visual Studio Code\toursafariafrica.com"
 safari-site-env\Scripts\Activate.ps1
 cd "E:\Visual Studio Code\toursafariafrica.com\root"
-python manage.py runserver
+
+
 
  
 python manage.py makemigrations
@@ -34,7 +35,7 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m "Nationality, age and phone numeber, with prefix menu, added to the booking form  "
+git commit -m " Update booking information and include timestamp fields in models "
 git push
 
 
