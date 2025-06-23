@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class Region(models.Model):
     name = models.CharField(max_length=100)
 
@@ -40,16 +39,17 @@ class Safari(models.Model):
         related_name='safaris'
     )
     provider = models.ForeignKey(
-        'Provider',  # Relacionando con el modelo Provider
+        Provider,
         on_delete=models.CASCADE,
         related_name='safaris',
-        null=True,  # Por si tienes safaris previos que no tengan proveedor
-        blank=True  # Permite que este campo sea opcional
+        null=True,
+        blank=True
     )
+    min_people = models.PositiveIntegerField(default=1)
+    max_people = models.PositiveIntegerField(default=10)
 
     def __str__(self):
         return self.name
-
 
 
 class SafariImage(models.Model):
@@ -71,9 +71,14 @@ class Booking(models.Model):
         related_name='bookings'
     )
     date = models.DateField()
+    booking_datetime = models.DateTimeField(auto_now_add=True)
     client_name = models.CharField(max_length=100)
     client_email = models.EmailField()
+    client_phone = models.CharField(max_length=20)
+    client_nationality = models.CharField(max_length=50)
+    client_age = models.PositiveIntegerField()
     confirmed_by_provider = models.BooleanField(default=False)
+    provider_response_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.client_name} – {self.date}"
@@ -99,30 +104,21 @@ class HomePage(models.Model):
     hero_title = models.CharField(max_length=200)
     hero_subtitle = models.CharField(max_length=200)
     hero_image = models.ImageField(upload_to='homepage/hero/', blank=True, null=True)
-
-    # Campo de video subido localmente
     hero_video = models.FileField(
         upload_to='homepage/hero/videos/',
         blank=True,
         null=True,
         help_text="Sube un archivo de video (formato .mp4 recomendado)"
     )
-
     why_choose_title = models.CharField(max_length=200)
-
-    # Beneficios
     experience_title = models.CharField(max_length=100)
     experience_description = models.TextField()
-
     responsible_tourism_title = models.CharField(max_length=100)
     responsible_tourism_description = models.TextField()
-
     expert_guides_title = models.CharField(max_length=100)
     expert_guides_description = models.TextField()
-
     custom_trips_title = models.CharField(max_length=100)
     custom_trips_description = models.TextField()
-
     destinations_title = models.CharField(max_length=200)
     destinations_image = models.ImageField(upload_to='homepage/destinations/', blank=True, null=True)
 
@@ -132,4 +128,3 @@ class HomePage(models.Model):
     class Meta:
         verbose_name = "Home Page Configuration"
         verbose_name_plural = "Home Page Configurations"
-

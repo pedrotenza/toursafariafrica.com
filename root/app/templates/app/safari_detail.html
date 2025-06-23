@@ -53,21 +53,87 @@
   <!-- Booking Form -->
   <section>
     <h2>Book This Safari</h2>
-    <form method="POST">
+
+    {% if error_message %}
+      <p style="color: red; font-weight: bold;">{{ error_message }}</p>
+    {% endif %}
+
+    <form method="POST" style="max-width: 500px;">
       {% csrf_token %}
-      <div>
-        <label for="id_name">Name:</label>
+      
+      <!-- Number of People -->
+      <div style="margin-bottom: 15px;">
+        <label for="id_number_of_people">Number of People:</label><br>
+        <input type="number"
+               id="id_number_of_people"
+               name="number_of_people"
+               min="{{ safari.min_people }}"
+               max="{{ safari.max_people }}"
+               value="{{ safari.min_people }}"
+               required>
+        <small style="color: gray;">Allowed: {{ safari.min_people }} to {{ safari.max_people }} people</small>
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <label for="id_name">Name:</label><br>
         <input type="text" id="id_name" name="name" required>
       </div>
-      <div>
-        <label for="id_email">Email:</label>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="id_email">Email:</label><br>
         <input type="email" id="id_email" name="email" required>
       </div>
-      <div>
-        <label for="id_date">Date:</label>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="id_country_code">Phone:</label><br>
+        <div style="display: flex; gap: 5px;">
+          <select id="id_country_code" name="country_code" required style="flex: 1;">
+            <option value="">Select code</option>
+          </select>
+          <input type="tel" id="id_phone" name="phone" placeholder="e.g. 712345678" required style="flex: 2;">
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="id_nationality">Nationality:</label><br>
+        <select id="id_nationality" name="nationality" required style="width: 100%; padding: 6px;">
+          <option value="">Select your nationality</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="id_age">Age:</label><br>
+        <input type="number" id="id_age" name="age" min="0" required>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="id_date">Date:</label><br>
         <input type="date" id="id_date" name="date" required>
       </div>
+      
       <button type="submit" style="margin-top: 10px;">Book Now</button>
     </form>
   </section>
+
+  <!-- JavaScript to load country codes and nationalities -->
+  {% load static %}
+  <script src="{% static 'js/country_codes.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const countryCodeSelect = document.getElementById("id_country_code");
+      const nationalitySelect = document.getElementById("id_nationality");
+
+      countryCallingCodes.forEach(country => {
+        const optionCode = document.createElement("option");
+        optionCode.value = country.code;
+        optionCode.textContent = `${country.name} (${country.code})`;
+        countryCodeSelect.appendChild(optionCode);
+
+        const optionNat = document.createElement("option");
+        optionNat.value = country.name;
+        optionNat.textContent = country.name;
+        nationalitySelect.appendChild(optionNat);
+      });
+    });
+  </script>
 {% endblock %}
