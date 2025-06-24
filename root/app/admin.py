@@ -59,7 +59,7 @@ class BookingAdmin(admin.ModelAdmin):
     
     def display_number_of_people(self, obj):
         return obj.number_of_people
-    display_number_of_people.short_description = 'People'
+    display_number_of_people.short_description = 'Participants'
     display_number_of_people.admin_order_field = 'number_of_people'
 
     def booking_date(self, obj):

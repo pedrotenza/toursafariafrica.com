@@ -71,6 +71,7 @@ class Booking(models.Model):
         related_name='bookings'
     )
     date = models.DateField()
+    number_of_people = models.PositiveIntegerField(default=1)
     booking_datetime = models.DateTimeField(auto_now_add=True)
     client_name = models.CharField(max_length=100)
     client_email = models.EmailField()
