@@ -31,7 +31,7 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m " Add number of participants field and enforce min/max limits in safari booking"
+git commit -m " Changed 'Number of People' label to 'Participants' throughout the booking form"
 git push
 
 

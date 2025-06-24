@@ -61,9 +61,9 @@
     <form method="POST" style="max-width: 500px;">
       {% csrf_token %}
       
-      <!-- Number of People -->
+      <!-- Participants -->
       <div style="margin-bottom: 15px;">
-        <label for="id_number_of_people">Number of People:</label><br>
+        <label for="id_number_of_people">Participants:</label><br>
         <input type="number"
                id="id_number_of_people"
                name="number_of_people"
@@ -126,7 +126,7 @@
       countryCallingCodes.forEach(country => {
         const optionCode = document.createElement("option");
         optionCode.value = country.code;
-        optionCode.textContent = `${country.name} (${country.code})`;
+        optionCode.textContent = ${country.name} (${country.code});
         countryCodeSelect.appendChild(optionCode);
 
         const optionNat = document.createElement("option");
@@ -136,4 +136,4 @@
       });
     });
   </script>
-{% endblock %}
+{% endblock %}      
