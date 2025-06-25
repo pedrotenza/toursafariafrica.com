@@ -31,7 +31,7 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m " Changed 'Number of People' label to 'Participants' throughout the booking form"
+git commit -m "Rename fields in HomePage model for generic content structure"
 git push
 
 
