@@ -112,15 +112,20 @@ class HomePage(models.Model):
         help_text="Sube un archivo de video (formato .mp4 recomendado)"
     )
     why_choose_title = models.CharField(max_length=200)
-    experience_title = models.CharField(max_length=100)
-    experience_description = models.TextField()
-    responsible_tourism_title = models.CharField(max_length=100)
-    responsible_tourism_description = models.TextField()
-    expert_guides_title = models.CharField(max_length=100)
-    expert_guides_description = models.TextField()
-    custom_trips_title = models.CharField(max_length=100)
-    custom_trips_description = models.TextField()
-    destinations_title = models.CharField(max_length=200)
+
+    title_1 = models.CharField(max_length=100)
+    description_1 = models.TextField()
+
+    title_2 = models.CharField(max_length=100)
+    description_2 = models.TextField()
+
+    title_3 = models.CharField(max_length=100)
+    description_3 = models.TextField()
+
+    title_4 = models.CharField(max_length=100)
+    description_4 = models.TextField()
+
+    destinations_title = models.CharField(max_length=200, blank=True, null=True)
     destinations_image = models.ImageField(upload_to='homepage/destinations/', blank=True, null=True)
 
     def __str__(self):
