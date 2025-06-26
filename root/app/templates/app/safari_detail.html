@@ -8,7 +8,7 @@
     {% for img in safari.images.all %}
       <img src="{{ img.image.url }}" alt="Image of {{ safari.name }}" width="300" style="border-radius: 8px;">
     {% empty %}
-      <p>No images available for this safari.</p>
+      <p>No images available.</p>
     {% endfor %}
   </div>
 
@@ -126,7 +126,7 @@
       countryCallingCodes.forEach(country => {
         const optionCode = document.createElement("option");
         optionCode.value = country.code;
-        optionCode.textContent = ${country.name} (${country.code});
+        optionCode.textContent = `${country.name} (${country.code})`;
         countryCodeSelect.appendChild(optionCode);
 
         const optionNat = document.createElement("option");
@@ -136,4 +136,4 @@
       });
     });
   </script>
-{% endblock %}      
+{% endblock %}
