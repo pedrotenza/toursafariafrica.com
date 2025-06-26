@@ -70,7 +70,7 @@ def safari_detail(request, safari_id):
 
             # Enviar correo al cliente
             try:
-                ---------------
+                ----
                 sender = "pedro.tenza@outlook.com"
                 recipient = email
 
