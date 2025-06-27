@@ -21,7 +21,7 @@ def safari_detail(request, safari_id):
     highlight_lines = safari.highlights.split('.') if safari.highlights else []
     highlight_lines = [line.strip() for line in highlight_lines if line.strip()]
 
-    error_message = None  # Para mostrar errores en el template
+    error_message = None  # To display errors in the template
 
     if request.method == 'POST':
         print("✅ Form received via POST")
@@ -32,20 +32,20 @@ def safari_detail(request, safari_id):
             nationality = request.POST.get('nationality', '')
             age = int(request.POST.get('age', 0))
             date = request.POST['date']
-            number_of_people = int(request.POST.get('number_of_people', 1))  
+            number_of_people = int(request.POST.get('number_of_people', 1))
 
-            # Validar contra min/max del safari
+            # Validate min/max participants
             if safari.min_people and number_of_people < safari.min_people:
                 error_message = f"Minimum number of people is {safari.min_people}."
             elif safari.max_people and number_of_people > safari.max_people:
                 error_message = f"Maximum number of people is {safari.max_people}."
 
             if error_message:
-                # Mostrar el error en el formulario sin perder datos
                 return render(request, 'app/safari_detail.html', {
                     'safari': safari,
                     'highlight_lines': highlight_lines,
-                    'error_message': error_message
+                    'error_message': error_message,
+                    'price_per_person': safari.client_price,
                 })
 
             print(f"Received data: {name}, {email}, {phone}, {nationality}, {age}, {date}, {number_of_people}")
@@ -68,18 +68,21 @@ def safari_detail(request, safari_id):
             confirm_url = f"{site_url}/booking/confirm/{booking.id}/"
             cancel_url = f"{site_url}/booking/cancel/{booking.id}/"
 
-            # Enviar correo al cliente
+            # Send email to the client
             try:
-                ----
+                --
                 sender = "pedro.tenza@outlook.com"
                 recipient = email
 
                 client_body = f"""
-Hello {name},
+Dear {name},
 
-Thank you for booking the safari: {safari.name}
+Thank you for your booking request for the safari: {safari.name}
 Selected date: {date}
-Number of people: {number_of_people}
+
+Price per person: ${safari.client_price}
+Number of Participants: {number_of_people}
+Total price: ${safari.client_price * number_of_people}
 
 Please note that your booking must be confirmed by the safari provider.  
 We will contact you soon with the confirmation and further details.
@@ -97,37 +100,40 @@ The Safari Team
                 server.login("apikey", api_key)
                 server.sendmail(sender, recipient, message.as_string())
                 print("✅ Email sent to client.")
-                
-                # Email al proveedor
+
+                # Email to provider in English
                 if provider_email:
+                    total_provider_price = safari.provider_price * number_of_people
                     provider_body = f"""
-Hola {safari.provider.name},
+Hello {safari.provider.name},
 
-Se ha realizado una nueva solicitud de reserva para el safari: {safari.name}  
-Fecha seleccionada: {date}  
-Participantes: {number_of_people}
-Nombre del cliente: {name}  
-Email del cliente: {email}  
-Teléfono del cliente: {phone}  
-Nacionalidad del cliente: {nationality}  
-Edad del cliente: {age}
+A new booking request has been made for the safari: {safari.name}  
+Selected date: {date}  
 
-Para CONFIRMAR la reserva, haz clic en este enlace:
-{confirm_url}
+Price per person: $        {safari.provider_price}  
+Number of participants:    {number_of_people}  
+Amount to be paid to you: ${total_provider_price}  
 
-Para CANCELAR la reserva, haz clic en este enlace:
-{cancel_url}
+Client's name: {name}   
+Client's age:  {age}  
+Nationality:   {nationality} 
 
-Gracias,  
-El equipo de Safaris
+To CONFIRM the booking, please click the following link:  
+{confirm_url}  
+
+To CANCEL the booking, please click the following link:  
+{cancel_url}  
+
+Regards,  
+The TOURSAFRICASAFARI Team
 """
                     provider_message = MIMEText(provider_body)
-                    provider_message["Subject"] = "Nueva solicitud de reserva de safari"
+                    provider_message["Subject"] = "New Safari Booking Request"
                     provider_message["From"] = sender
                     provider_message["To"] = provider_email
 
                     server.sendmail(sender, provider_email, provider_message.as_string())
-                    print("📩 Email enviado al proveedor.")
+                    print("📩 Email sent to the provider.")
 
                 server.quit()
             except Exception as e:
@@ -140,7 +146,9 @@ El equipo de Safaris
 
     return render(request, 'app/safari_detail.html', {
         'safari': safari,
-        'highlight_lines': highlight_lines
+        'highlight_lines': highlight_lines,
+        'error_message': error_message,
+        'price_per_person': safari.client_price,
     })
 
 
@@ -148,10 +156,10 @@ def confirm_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     booking.confirmed_by_provider = True
     booking.save()
-    return HttpResponse("✅ Reserva confirmada correctamente.")
+    return HttpResponse("✅ Booking confirmed successfully.")
 
 
 def cancel_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
     booking.delete()
-    return HttpResponse("❌ Reserva cancelada correctamente.")
+    return HttpResponse("❌ Booking canceled successfully.")

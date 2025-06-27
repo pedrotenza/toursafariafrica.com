@@ -12,6 +12,7 @@ python manage.py makemigrations
 python manage.py migrate
 
 
+
 python manage.py runserver
 
 http://localhost:8000/admin
@@ -31,7 +32,7 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m "Rename fields in HomePage model for generic content structure"
+git commit -m "Add provider price, commission, and client price fields to Safari model with admin inline calculation"
 git push
 
 

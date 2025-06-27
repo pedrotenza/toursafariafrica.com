@@ -20,7 +20,7 @@ class SafariItineraryItemInline(admin.TabularInline):
     model = SafariItineraryItem
     extra = 1
 
-# Admin de Safari
+# Admin de Safari con client_price readonly y cálculo JS
 @admin.register(Safari)
 class SafariAdmin(admin.ModelAdmin):
     list_display = ('name', 'subregion')
@@ -28,16 +28,32 @@ class SafariAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     inlines = [SafariImageInline, SafariItineraryItemInline]
 
+    readonly_fields = ('client_price',)
+
+    fieldsets = (
+        (None, {
+            'fields': (
+                'name', 'description', 'highlights', 'subregion', 'provider',
+                ('min_people', 'max_people'),
+                ('provider_price', 'commission', 'client_price'),  # todos en la misma línea
+            ),
+        }),
+    )
+
+    class Media:
+        js = ('admin/js/price_calc.js',)
+
+
 # Admin de Booking con campos personalizados y orden corregido
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = (
-        'safari_date',                # Fecha del Safari (del campo date)
-        'safari_name',                # Nombre del Safari
+        'safari_date',                
+        'safari_name',                
         'display_number_of_people',
-        'booking_date',               # Fecha Reserva (repetida porque solo hay date)
-        'provider_name',              # Operador
-        'provider_response_datetime', # Respuesta Operador
+        'booking_date',               
+        'provider_name',              
+        'provider_response_datetime', 
         'display_client_name',
         'display_client_email',
         'display_phone',
@@ -126,4 +142,3 @@ class HomePageAdmin(admin.ModelAdmin):
 class ProviderAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'whatsapp_number')
     search_fields = ('name', 'email', 'whatsapp_number')
-

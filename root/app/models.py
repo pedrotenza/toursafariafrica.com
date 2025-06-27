@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 
 class Region(models.Model):
     name = models.CharField(max_length=100)
@@ -47,6 +47,37 @@ class Safari(models.Model):
     )
     min_people = models.PositiveIntegerField(default=1)
     max_people = models.PositiveIntegerField(default=10)
+
+    # Campos de precios
+    provider_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+    commission = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        help_text="Porcentaje de comisión (%)"
+    )
+    client_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        editable=False,
+        default=0
+    )
+
+    def clean(self):
+        if self.provider_price < 0:
+            raise ValidationError({"provider_price": "El precio del proveedor no puede ser negativo."})
+        if self.commission < 0:
+            raise ValidationError({"commission": "La comisión no puede ser negativa."})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Valida antes de guardar
+        # Calcula el precio para el cliente con la comisión aplicada
+        self.client_price = self.provider_price * (1 + self.commission / 100)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
