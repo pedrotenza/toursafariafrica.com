@@ -1,5 +1,6 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class Region(models.Model):
     name = models.CharField(max_length=100)
@@ -48,6 +49,38 @@ class Safari(models.Model):
     min_people = models.PositiveIntegerField(default=1)
     max_people = models.PositiveIntegerField(default=10)
 
+    # Campos de precios
+    provider_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+    commission = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        verbose_name="Commission (%)",
+        help_text= "Commission rate (%)"
+    )
+    client_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        editable=False,
+        default=0
+    )
+
+    def clean(self):
+        if self.provider_price < 0:
+            raise ValidationError({"provider_price": "Provider price cannot be negative."})
+        if self.commission < 0:
+            raise ValidationError({"commission": "Commission cannot be negative."})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Valida antes de guardar
+        # Calcula el precio para el cliente con la comisión aplicada
+        self.client_price = self.provider_price * (1 + self.commission / 100)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
@@ -65,6 +98,14 @@ class SafariImage(models.Model):
 
 
 class Booking(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('refunded', 'Refunded'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
     safari = models.ForeignKey(
         Safari,
         on_delete=models.CASCADE,
@@ -78,11 +119,45 @@ class Booking(models.Model):
     client_phone = models.CharField(max_length=20)
     client_nationality = models.CharField(max_length=50)
     client_age = models.PositiveIntegerField()
+    
+    # Campos de confirmación
     confirmed_by_provider = models.BooleanField(default=False)
     provider_response_date = models.DateTimeField(null=True, blank=True)
+    
+    # Campos de pago (nuevos)
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS_CHOICES,
+        default='pending'
+    )
+    payment_date = models.DateTimeField(null=True, blank=True)
+    payment_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    payment_method = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Método de pago utilizado (simulado por ahora)"
+    )
+    transaction_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="ID de transacción (simulado por ahora)"
+    )
 
     def __str__(self):
         return f"{self.client_name} – {self.date}"
+
+    def save(self, *args, **kwargs):
+        # Calcula el monto total cuando se crea o actualiza
+        if not self.payment_amount and self.safari:
+            self.payment_amount = self.safari.client_price * self.number_of_people
+        super().save(*args, **kwargs)
 
 
 class SafariItineraryItem(models.Model):
