@@ -75,7 +75,7 @@ def safari_detail(request, safari_id):
             cancel_url = f"{site_url}/booking/cancel/{booking.id}/"
 
             try:
-                ----
+                --
                 sender = "pedro.tenza@outlook.com"
                 recipient = email
 
@@ -266,7 +266,7 @@ def generate_invoice_pdf(booking, invoice_type="client"):
 def send_booking_confirmation_emails(booking, request):
     """Envía los emails de confirmación con facturas adjuntas"""
     try:
-        ------
+        --
         sender = "pedro.tenza@outlook.com"
         
         # --- Email al cliente ---
