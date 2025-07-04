@@ -5,22 +5,26 @@ from email.mime.application import MIMEApplication
 from .invoice_service import generate_invoice_pdf
 import os
 from dotenv import load_dotenv
+from django.urls import reverse  # Import para reverse
 
-# Cargar variables (redundante pero seguro)
-load_dotenv()  # Esto asegura que funcione incluso si se ejecuta el módulo directamente
-
-
+load_dotenv()
 
 SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
 SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 
-def send_booking_request_email(booking):
+
+def request_build_url(request, path_name, booking_id):
+    # Usar reverse para obtener ruta relativa y build_absolute_uri para absoluta
+    relative_url = reverse(path_name, args=[booking_id])
+    return request.build_absolute_uri(relative_url)
+
+
+def send_booking_request_email(booking, request):
     try:
         sender = SENDER_EMAIL
         recipient = booking.client_email
         subject = f"{booking.safari.name} – Booking Request with TourSafariAfrica – {booking.date.strftime('%d.%m.%Y')}"
 
-        # Email to client
         client_body = f"""
         <html>
           <body>
@@ -48,14 +52,16 @@ Total Price:          {booking.safari.client_price * booking.number_of_people:.2
 
         server = smtplib.SMTP("smtp.sendgrid.net", 587)
         server.starttls()
-        server.login("apikey", API_KEY)
+        server.login("apikey", SENDGRID_API_KEY)
         server.sendmail(sender, recipient, message.as_string())
         print("✅ Booking request email sent to client.")
 
-        # Email to provider
         if booking.safari.provider and booking.safari.provider.email:
             provider_email = booking.safari.provider.email
             total_provider_price = booking.safari.provider_price * booking.number_of_people
+
+            confirm_url = request_build_url(request, 'confirm_booking', booking.id)
+            cancel_url = request_build_url(request, 'cancel_booking', booking.id)
 
             provider_body = f"""
             <html>
@@ -77,15 +83,14 @@ Age:         {booking.client_age}
 Nationality: {booking.client_nationality}
                 </pre>
                 <p>To <strong>CONFIRM</strong> the booking, click here:<br>
-                <a href="{request_build_url('booking/confirm', booking.id)}">{request_build_url('booking/confirm', booking.id)}</a></p>
+                <a href="{confirm_url}">{confirm_url}</a></p>
                 <p>To <strong>CANCEL</strong> the booking, click here:<br>
-                <a href="{request_build_url('booking/cancel', booking.id)}">{request_build_url('booking/cancel', booking.id)}</a></p>
+                <a href="{cancel_url}">{cancel_url}</a></p>
                 <p>Best regards,<br>The TourSafariAfrica Team</p>
               </body>
             </html>
             """
 
-            provider_message = MIMEText(provider_body, "html")
             provider_message = MIMEMultipart()
             provider_message['Subject'] = subject
             provider_message['From'] = sender
@@ -100,11 +105,11 @@ Nationality: {booking.client_nationality}
     except Exception as e:
         print(f"❌ Error sending booking request emails: {e}")
 
+
 def send_booking_confirmation_emails(booking, request):
     try:
         sender = SENDER_EMAIL
 
-        # Email client
         client_subject = f"{booking.safari.name} – Booking Confirmed – {booking.date.strftime('%d.%m.%Y')}"
         client_body = f"""
         <html>
@@ -138,12 +143,11 @@ Total Price: ${booking.safari.client_price * booking.number_of_people:.2f}
 
         server = smtplib.SMTP("smtp.sendgrid.net", 587)
         server.starttls()
-        server.login("apikey", API_KEY)
+        server.login("apikey", SENDGRID_API_KEY)
         server.sendmail(sender, booking.client_email, message_client.as_string())
 
         print("✅ Confirmation email sent to client.")
 
-        # Email provider
         if booking.safari.provider and booking.safari.provider.email:
             provider_subject = f"{booking.safari.name} – Booking Confirmed – {booking.date.strftime('%d.%m.%Y')}"
             provider_body = f"""
@@ -188,7 +192,3 @@ Phone: {booking.client_phone}
 
     except Exception as e:
         print(f"❌ Error sending confirmation emails: {e}")
-
-def request_build_url(path, booking_id):
-    # Build full URL for email links; replace 'example.com' with your domain
-    return f"https://example.com/{path}/{booking_id}"

@@ -24,7 +24,7 @@ class SubRegion(models.Model):
 class Provider(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
-    whatsapp_number = models.CharField(max_length=20)
+    whatsapp_number = models.CharField(max_length=20, blank=True)  # Podría ser opcional
 
     def __str__(self):
         return self.name
@@ -49,7 +49,7 @@ class Safari(models.Model):
     min_people = models.PositiveIntegerField(default=1)
     max_people = models.PositiveIntegerField(default=10)
 
-    # Campos de precios
+    # Precios
     provider_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -74,10 +74,11 @@ class Safari(models.Model):
             raise ValidationError({"provider_price": "Provider price cannot be negative."})
         if self.commission < 0:
             raise ValidationError({"commission": "Commission cannot be negative."})
+        if self.min_people > self.max_people:
+            raise ValidationError({"min_people": "Min people cannot exceed max people."})
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # Valida antes de guardar
-        # Calcula el precio para el cliente con la comisión aplicada
+        self.full_clean()
         self.client_price = self.provider_price * (1 + self.commission / 100)
         super().save(*args, **kwargs)
 
@@ -119,12 +120,12 @@ class Booking(models.Model):
     client_phone = models.CharField(max_length=20)
     client_nationality = models.CharField(max_length=50)
     client_age = models.PositiveIntegerField()
-    
-    # Campos de confirmación
+
+    # Confirmación proveedor
     confirmed_by_provider = models.BooleanField(default=False)
     provider_response_date = models.DateTimeField(null=True, blank=True)
-    
-    # Campos de pago (nuevos)
+
+    # Pago
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
@@ -153,10 +154,22 @@ class Booking(models.Model):
     def __str__(self):
         return f"{self.client_name} – {self.date}"
 
+    def clean(self):
+        if self.number_of_people < self.safari.min_people:
+            raise ValidationError(
+                {"number_of_people": f"Minimum number of people is {self.safari.min_people}."}
+            )
+        if self.number_of_people > self.safari.max_people:
+            raise ValidationError(
+                {"number_of_people": f"Maximum number of people is {self.safari.max_people}."}
+            )
+        if self.date < timezone.localdate():
+            raise ValidationError({"date": "Booking date cannot be in the past."})
+
     def save(self, *args, **kwargs):
-        # Calcula el monto total cuando se crea o actualiza
-        if not self.payment_amount and self.safari:
-            self.payment_amount = self.safari.client_price * self.number_of_people
+        self.full_clean()  # Validar antes de guardar
+        # Calcular monto total si no está asignado (o recalcular si cambian personas o safari)
+        self.payment_amount = self.safari.client_price * self.number_of_people
         super().save(*args, **kwargs)
 
 
