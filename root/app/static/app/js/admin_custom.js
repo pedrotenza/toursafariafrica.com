@@ -1,56 +1,81 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Espera a que exista el elemento de filtros
-    const waitForFilters = setInterval(function() {
-        const filterSection = document.getElementById('changelist-filter');
-        const contentMain = document.getElementById('content-main');
+    // Eliminar el botón nativo de Django de forma más agresiva
+    const removeNativeButton = function() {
+        // Todos los selectores posibles donde puede aparecer el botón nativo
+        const selectors = [
+            '#toolbar form#changelist-search + a',
+            '#toolbar form#changelist-search ~ a',
+            '#changelist-search + a',
+            '#changelist-search ~ a'
+        ];
         
-        if (filterSection && contentMain) {
-            clearInterval(waitForFilters);
-            
-            // 1. Crear botón de toggle
-            const toggleBtn = document.createElement('button');
-            toggleBtn.innerHTML = '❌ Ocultar Filtros';
-            toggleBtn.style.cssText = `
-                background: #417690;
-                color: white;
-                padding: 8px 15px;
-                margin: 0 15px 15px 0;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-weight: bold;
-            `;
-            
-            // 2. Insertar botón en un lugar visible
-            const search = document.getElementById('changelist-search');
-            if (search) {
-                search.after(toggleBtn);
-            } else {
-                document.querySelector('.actions').before(toggleBtn);
-            }
-            
-            // 3. Función para ocultar/mostrar
-            function toggleFilters() {
-                if (filterSection.style.display === 'none') {
-                    // Mostrar filtros
-                    filterSection.style.display = 'block';
-                    contentMain.style.marginRight = '250px';
-                    toggleBtn.innerHTML = '❌ Ocultar Filtros';
-                } else {
-                    // Ocultar completamente
-                    filterSection.style.display = 'none';
-                    contentMain.style.marginRight = '0';
-                    toggleBtn.innerHTML = '👁️ Mostrar Filtros';
+        selectors.forEach(selector => {
+            const buttons = document.querySelectorAll(selector);
+            buttons.forEach(btn => {
+                if (btn.textContent.match(/show filters|mostrar filtros/i)) {
+                    btn.style.display = 'none';
+                    btn.remove();
                 }
-            }
-            
-            // 4. Evento click
-            toggleBtn.addEventListener('click', toggleFilters);
-            
-            // 5. Inicialmente visibles
-            filterSection.style.display = 'block';
-            contentMain.style.marginRight = '250px';
-            contentMain.style.transition = 'margin-right 0.3s ease';
+            });
+        });
+    };
+
+    // Crear nuestro botón personalizado
+    const setupCustomButton = function() {
+        const filterSection = document.getElementById('changelist-filter');
+        if (!filterSection) return;
+
+        // Eliminar cualquier versión previa de nuestro botón
+        const oldButtons = document.querySelectorAll('.custom-filter-btn');
+        oldButtons.forEach(btn => btn.remove());
+
+        // Crear nuevo botón
+        const btn = document.createElement('button');
+        btn.className = 'custom-filter-btn';
+        btn.textContent = 'Toggle Filters';
+        btn.style.cssText = `
+            background: #417690;
+            color: white;
+            padding: 8px 15px;
+            margin: 0 15px 15px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        `;
+
+        // Insertar en la ubicación correcta
+        const search = document.getElementById('changelist-search') || 
+                      document.querySelector('.actions');
+        if (search) {
+            search.parentNode.insertBefore(btn, search.nextSibling);
         }
-    }, 100);
+
+        // Funcionalidad del botón
+        btn.addEventListener('click', function() {
+            filterSection.classList.toggle('visible');
+            btn.textContent = filterSection.classList.contains('visible') 
+                ? 'Hide Filters' 
+                : 'Show Filters';
+        });
+
+        // Estado inicial
+        filterSection.classList.remove('visible');
+    };
+
+    // Ejecutar con retraso y verificación continua
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const init = setInterval(() => {
+        removeNativeButton();
+        setupCustomButton();
+        
+        attempts++;
+        if (attempts >= maxAttempts || 
+            (!document.querySelector('a[href="#"]') && 
+             document.querySelector('.custom-filter-btn'))) {
+            clearInterval(init);
+        }
+    }, 200);
 });

@@ -2,11 +2,62 @@
 {% load static %}
 
 {% block extrahead %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'app/css/admin_custom.css' %}?v=2.0">
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'app/css/admin_custom.css' %}?v=2.1">
+  <style>
+    /* Oculta el botón predeterminado de filtros de Django */
+    #toolbar a[href="#"] {
+      display: none !important;
+    }
+    
+    /* Estilos para nuestro botón personalizado */
+    #filter-toggle {
+      background: #417690;
+      color: white;
+      padding: 8px 15px;
+      margin: 0 15px 15px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s ease;
+    }
+    
+    #filter-toggle:hover {
+      background: #30657b;
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
-    {{ block.super }}
-    <script src="{% static 'app/js/admin_custom.js' %}?v=2.0"></script>
+  <!-- Botón personalizado - ahora solo uno -->
+  <button id="filter-toggle" class="custom-filter-btn">
+    Show filters
+  </button>
+
+  {{ block.super }}
+
+  <script src="{% static 'app/js/admin_custom.js' %}?v=2.1"></script>
+  <script>
+    // Script simplificado y mejorado
+    document.addEventListener("DOMContentLoaded", function() {
+      const toggleButton = document.getElementById("filter-toggle");
+      const filterPanel = document.getElementById("changelist-filter");
+      
+      if (toggleButton && filterPanel) {
+        // Estado inicial (oculto)
+        filterPanel.style.display = 'none';
+        
+        toggleButton.addEventListener("click", function() {
+          const isHidden = filterPanel.style.display === 'none';
+          filterPanel.style.display = isHidden ? 'block' : 'none';
+          toggleButton.textContent = isHidden ? "Hide filters" : "Show filters";
+        });
+      }
+      
+      // Eliminar definitivamente el botón nativo si existe
+      const nativeBtn = document.querySelector('a[href="#"]');
+      if (nativeBtn) nativeBtn.remove();
+    });
+  </script>
 {% endblock %}
