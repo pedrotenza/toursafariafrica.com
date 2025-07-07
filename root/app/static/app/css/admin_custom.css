@@ -1,33 +1,57 @@
-/* ESTILOS PARA OCULTACIÓN COMPLETA */
+/* Eliminar completamente el botón nativo */
+#toolbar a[href="#"], 
+#changelist-search + a, 
+#changelist-search ~ a {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Estilos para nuestro botón personalizado */
+.custom-filter-btn {
+    background: #417690 !important;
+    color: white !important;
+    padding: 8px 15px !important;
+    margin: 0 15px 15px 0 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-weight: bold !important;
+    transition: all 0.2s ease !important;
+    display: inline-block !important;
+}
+
+.custom-filter-btn:hover {
+    background: #30657b !important;
+}
+
+/* Panel de filtros */
 #changelist-filter {
-    display: none; /* Inicialmente oculto (el JS lo mostrará) */
-    position: absolute;
+    display: none;
+    position: fixed;
     right: 0;
     top: 0;
     width: 250px;
+    height: 100vh;
     background: #f8f8f8;
-    padding: 10px;
-    height: 100%;
+    padding: 15px;
     border-left: 1px solid #ddd;
-    z-index: 100;
+    z-index: 1000;
+    overflow-y: auto;
 }
 
-/* CONTENIDO PRINCIPAL */
-#content-main {
-    width: 100% !important;
-    transition: margin-right 0.3s ease;
-}
-
-/* Cuando los filtros están visibles */
-body.show-filters #changelist-filter {
+#changelist-filter.visible {
     display: block !important;
 }
 
-body.show-filters #content-main {
-    margin-right: 250px !important;
+/* Ajustes del contenido */
+#content-main {
+    transition: margin-right 0.3s ease;
 }
 
-/* Estilos del botón */
-button:hover {
-    background: #30657b !important;
+#changelist-filter.visible ~ #content-main {
+    margin-right: 250px !important;
 }

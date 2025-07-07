@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.utils.html import format_html
+from django.utils import timezone
+from datetime import timedelta
 from .models import (
     Safari,
     Booking,
@@ -10,6 +11,77 @@ from .models import (
     HomePage,
     Provider
 )
+
+# Filtro de fecha personalizado sin 'All' duplicado
+class DateRangeFilter(admin.SimpleListFilter):
+    title = 'Date range'
+    parameter_name = 'date_range'
+
+    def lookups(self, request, model_admin):
+        # Solo mostrar 'All' si no hay filtro aplicado
+        if not request.GET.get(self.parameter_name):
+            return [
+                ('last_12_months', 'Last 12 months'),
+                ('last_month', 'Last month'),
+                ('last_week', 'Last week'),
+                ('yesterday', 'Yesterday'),
+                ('today', 'Today'),
+                ('tomorrow', 'Tomorrow'),
+                ('next_week', 'Next week'),
+                ('next_month', 'Next month'),
+                ('next_12_months', 'Next 12 months'),
+            ]
+        return [
+            ('last_12_months', 'Last 12 months'),
+            ('last_month', 'Last month'),
+            ('last_week', 'Last week'),
+            ('yesterday', 'Yesterday'),
+            ('today', 'Today'),
+            ('tomorrow', 'Tomorrow'),
+            ('next_week', 'Next week'),
+            ('next_month', 'Next month'),
+            ('next_12_months', 'Next 12 months'),
+        ]
+
+    def queryset(self, request, queryset):
+        today = timezone.now().date()
+        
+        if self.value() == 'last_12_months':
+            last_year = today - timedelta(days=365)
+            return queryset.filter(date__range=[last_year, today])
+            
+        if self.value() == 'last_month':
+            last_month = today - timedelta(days=30)
+            return queryset.filter(date__range=[last_month, today])
+            
+        if self.value() == 'last_week':
+            last_week = today - timedelta(days=7)
+            return queryset.filter(date__range=[last_week, today])
+            
+        if self.value() == 'yesterday':
+            yesterday = today - timedelta(days=1)
+            return queryset.filter(date=yesterday)
+            
+        if self.value() == 'today':
+            return queryset.filter(date=today)
+            
+        if self.value() == 'tomorrow':
+            tomorrow = today + timedelta(days=1)
+            return queryset.filter(date=tomorrow)
+            
+        if self.value() == 'next_week':
+            next_week = today + timedelta(days=7)
+            return queryset.filter(date__range=[today, next_week])
+            
+        if self.value() == 'next_month':
+            next_month = today + timedelta(days=30)
+            return queryset.filter(date__range=[today, next_month])
+            
+        if self.value() == 'next_12_months':
+            next_year = today + timedelta(days=365)
+            return queryset.filter(date__range=[today, next_year])
+            
+        return queryset
 
 # Inlines
 class SafariImageInline(admin.TabularInline):
@@ -31,91 +103,80 @@ class SafariAdmin(admin.ModelAdmin):
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = (
-        'safari_date',
+        'activity_date',
         'safari_name',
-        'display_number_of_people',
+        'participants',
         'booking_date',
         'provider_name',
-        'provider_response_datetime',
-        'display_client_name',
-        'display_client_email',
-        'display_phone',
-        'display_client_nationality',
-        'display_client_age',
+        'provider_response',
+        'client_name',
+        'client_email',
+        'client_phone',
+        'client_nationality',
+        'client_age',
     )
-    list_filter = ('confirmed_by_provider', 'date')
+    list_filter = (
+        DateRangeFilter,
+        'confirmed_by_provider',
+    )
     search_fields = ('client_name', 'client_email', 'client_phone')
-    list_per_page = 25  # Paginación mejorada
+    list_per_page = 25
+    list_select_related = ('safari', 'safari__provider')
 
-    # Plantillas personalizadas
+    # Custom templates
     change_form_template = 'admin/app/booking/change_form.html'
     change_list_template = 'admin/app/booking/change_list.html'
 
-    def safari_date(self, obj):
+    def activity_date(self, obj):
         return obj.date.strftime('%d/%m/%Y') if obj.date else '—'
-    safari_date.short_description = 'Safari Date'
-    safari_date.admin_order_field = 'date'
+    activity_date.short_description = 'Activity Date'
+    activity_date.admin_order_field = 'date'
 
     def safari_name(self, obj):
         return obj.safari.name if obj.safari else '—'
     safari_name.short_description = 'Safari'
-    safari_name.admin_order_field = 'safari__name'
 
-    def display_number_of_people(self, obj):
+    def participants(self, obj):
         return obj.number_of_people
-    display_number_of_people.short_description = 'Participants'
-    display_number_of_people.admin_order_field = 'number_of_people'
+    participants.short_description = 'Participants'
 
     def booking_date(self, obj):
         return obj.booking_datetime.strftime('%d/%m/%Y %H:%M') if obj.booking_datetime else '—'
     booking_date.short_description = 'Booking Date'
-    booking_date.admin_order_field = 'booking_datetime'
 
     def provider_name(self, obj):
         return obj.safari.provider.name if obj.safari and obj.safari.provider else '—'
     provider_name.short_description = 'Provider'
-    provider_name.admin_order_field = 'safari__provider__name'
 
-    def provider_response_datetime(self, obj):
+    def provider_response(self, obj):
         return obj.provider_response_date.strftime('%d/%m/%Y %H:%M') if obj.provider_response_date else '—'
-    provider_response_datetime.short_description = 'Provider Response Date'
-    provider_response_datetime.admin_order_field = 'provider_response_date'
+    provider_response.short_description = 'Provider Response'
 
-    def display_client_name(self, obj):
+    def client_name(self, obj):
         return obj.client_name if obj.client_name else '—'
-    display_client_name.short_description = 'Client'
-    display_client_name.admin_order_field = 'client_name'
+    client_name.short_description = 'Client'
 
-    def display_client_email(self, obj):
+    def client_email(self, obj):
         return obj.client_email if obj.client_email else '—'
-    display_client_email.short_description = 'E mail'
-    display_client_email.admin_order_field = 'client_email'
+    client_email.short_description = 'Email'
 
-    def display_phone(self, obj):
+    def client_phone(self, obj):
         return obj.client_phone if obj.client_phone else '—'
-    display_phone.short_description = 'Phone'
-    display_phone.admin_order_field = 'client_phone'
+    client_phone.short_description = 'Phone'
 
-    def display_client_nationality(self, obj):
+    def client_nationality(self, obj):
         return obj.client_nationality if obj.client_nationality else '—'
-    display_client_nationality.short_description = 'Nationality'
-    display_client_nationality.admin_order_field = 'client_nationality'
+    client_nationality.short_description = 'Nationality'
 
-    def display_client_age(self, obj):
+    def client_age(self, obj):
         return obj.client_age if obj.client_age else '—'
-    display_client_age.short_description = 'Age'
-    display_client_age.admin_order_field = 'client_age'
+    client_age.short_description = 'Age'
 
     class Media:
         css = {
             'all': ('app/css/admin_custom.css',)
         }
-        js = ('app/js/admin_custom.js',)  # Ruta corregida
-
-    def changelist_view(self, request, extra_context=None):
-        extra_context = extra_context or {}
-        extra_context['show_filters_button'] = True  # Variable para la plantilla
-        return super().changelist_view(request, extra_context=extra_context)
+        js = ('app/js/admin_custom.js',)
 
 @admin.register(Region)
 class RegionAdmin(admin.ModelAdmin):
@@ -137,3 +198,4 @@ class HomePageAdmin(admin.ModelAdmin):
 class ProviderAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'whatsapp_number')
     search_fields = ('name', 'email', 'whatsapp_number')
+    list_per_page = 20
