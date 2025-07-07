@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'app/css/admin_custom.css' %}?v=2.0">
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    <script src="{% static 'app/js/admin_custom.js' %}?v=2.0"></script>
+{% endblock %}

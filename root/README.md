@@ -31,7 +31,7 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m "Rename fields in HomePage model for generic content structure"
+git commit -m "Split views.py into multiple modules"
 git push
 
 

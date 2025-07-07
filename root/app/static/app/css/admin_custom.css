@@ -1,0 +1,33 @@
+/* ESTILOS PARA OCULTACIÓN COMPLETA */
+#changelist-filter {
+    display: none; /* Inicialmente oculto (el JS lo mostrará) */
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 250px;
+    background: #f8f8f8;
+    padding: 10px;
+    height: 100%;
+    border-left: 1px solid #ddd;
+    z-index: 100;
+}
+
+/* CONTENIDO PRINCIPAL */
+#content-main {
+    width: 100% !important;
+    transition: margin-right 0.3s ease;
+}
+
+/* Cuando los filtros están visibles */
+body.show-filters #changelist-filter {
+    display: block !important;
+}
+
+body.show-filters #content-main {
+    margin-right: 250px !important;
+}
+
+/* Estilos del botón */
+button:hover {
+    background: #30657b !important;
+}

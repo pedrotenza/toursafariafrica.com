@@ -1,0 +1,15 @@
+/* Expand table to full width */
+.change-list {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto;
+}
+
+.change-list-results table {
+    width: 100% !important;
+    table-layout: auto !important;
+}
+
+.results table th, .results table td {
+    white-space: nowrap;
+}

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from .models import (
     Safari,
     Booking,
@@ -10,7 +11,7 @@ from .models import (
     Provider
 )
 
-# Inlines para SafariImage y SafariItineraryItem
+# Inlines
 class SafariImageInline(admin.TabularInline):
     model = SafariImage
     extra = 1
@@ -20,7 +21,6 @@ class SafariItineraryItemInline(admin.TabularInline):
     model = SafariItineraryItem
     extra = 1
 
-# Admin de Safari
 @admin.register(Safari)
 class SafariAdmin(admin.ModelAdmin):
     list_display = ('name', 'subregion')
@@ -28,16 +28,15 @@ class SafariAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     inlines = [SafariImageInline, SafariItineraryItemInline]
 
-# Admin de Booking con campos personalizados y orden corregido
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = (
-        'safari_date',                # Fecha del Safari (del campo date)
-        'safari_name',                # Nombre del Safari
+        'safari_date',
+        'safari_name',
         'display_number_of_people',
-        'booking_date',               # Fecha Reserva (repetida porque solo hay date)
-        'provider_name',              # Operador
-        'provider_response_datetime', # Respuesta Operador
+        'booking_date',
+        'provider_name',
+        'provider_response_datetime',
         'display_client_name',
         'display_client_email',
         'display_phone',
@@ -46,6 +45,11 @@ class BookingAdmin(admin.ModelAdmin):
     )
     list_filter = ('confirmed_by_provider', 'date')
     search_fields = ('client_name', 'client_email', 'client_phone')
+    list_per_page = 25  # Paginación mejorada
+
+    # Plantillas personalizadas
+    change_form_template = 'admin/app/booking/change_form.html'
+    change_list_template = 'admin/app/booking/change_list.html'
 
     def safari_date(self, obj):
         return obj.date.strftime('%d/%m/%Y') if obj.date else '—'
@@ -56,7 +60,7 @@ class BookingAdmin(admin.ModelAdmin):
         return obj.safari.name if obj.safari else '—'
     safari_name.short_description = 'Safari'
     safari_name.admin_order_field = 'safari__name'
-    
+
     def display_number_of_people(self, obj):
         return obj.number_of_people
     display_number_of_people.short_description = 'Participants'
@@ -102,28 +106,34 @@ class BookingAdmin(admin.ModelAdmin):
     display_client_age.short_description = 'Age'
     display_client_age.admin_order_field = 'client_age'
 
-# Admin de Region
+    class Media:
+        css = {
+            'all': ('app/css/admin_custom.css',)
+        }
+        js = ('app/js/admin_custom.js',)  # Ruta corregida
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_filters_button'] = True  # Variable para la plantilla
+        return super().changelist_view(request, extra_context=extra_context)
+
 @admin.register(Region)
 class RegionAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-# Admin de SubRegion
 @admin.register(SubRegion)
 class SubRegionAdmin(admin.ModelAdmin):
     list_display = ('name', 'region')
     list_filter = ('region',)
     search_fields = ('name',)
 
-# Admin de HomePage
 @admin.register(HomePage)
 class HomePageAdmin(admin.ModelAdmin):
     list_display = ('hero_title', 'why_choose_title', 'destinations_title')
     search_fields = ('hero_title', 'why_choose_title', 'destinations_title')
 
-# Admin de Provider
 @admin.register(Provider)
 class ProviderAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'whatsapp_number')
     search_fields = ('name', 'email', 'whatsapp_number')
-
