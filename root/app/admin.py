@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils import timezone
 from datetime import timedelta
+from django.utils.html import format_html
 from .models import (
     Safari,
     Booking,
@@ -129,16 +130,16 @@ class BookingAdmin(admin.ModelAdmin):
 
     def activity_date(self, obj):
         return obj.date.strftime('%d/%m/%Y') if obj.date else '—'
-    activity_date.short_description = 'Activity Date'
+    activity_date.short_description = 'Date'
     activity_date.admin_order_field = 'date'
 
     def safari_name(self, obj):
         return obj.safari.name if obj.safari else '—'
-    safari_name.short_description = 'Safari'
+    safari_name.short_description = 'Activity'
 
     def participants(self, obj):
         return obj.number_of_people
-    participants.short_description = 'Participants'
+    participants.short_description = 'Part'
 
     def booking_date(self, obj):
         return obj.booking_datetime.strftime('%d/%m/%Y %H:%M') if obj.booking_datetime else '—'
@@ -149,8 +150,23 @@ class BookingAdmin(admin.ModelAdmin):
     provider_name.short_description = 'Provider'
 
     def provider_response(self, obj):
-        return obj.provider_response_date.strftime('%d/%m/%Y %H:%M') if obj.provider_response_date else '—'
-    provider_response.short_description = 'Provider Response'
+        # Caso 1 y 2: Si hay fecha de respuesta (aceptado o rechazado)
+        if obj.provider_response_date:
+            # Formateamos la fecha (ej: "08/07/2024 14:30")
+            response_time = obj.provider_response_date.strftime('%d/%m/%Y %H:%M')
+            
+            # Caso 1: Aceptado (verde)
+            if obj.confirmed_by_provider:
+                return format_html('<span style="color: green;">{} (Accepted)</span>', response_time)
+            
+            # Caso 2: Rechazado (rojo)
+            elif obj.confirmed_by_provider is False:
+                return format_html('<span style="color: red;">{} (Rejected)</span>', response_time)
+    
+        # Caso 3: Pendiente (naranja)
+        return format_html('<span style="color: orange;">Pending</span>')
+
+
 
     def client_name(self, obj):
         return obj.client_name if obj.client_name else '—'
@@ -159,6 +175,7 @@ class BookingAdmin(admin.ModelAdmin):
     def client_email(self, obj):
         return obj.client_email if obj.client_email else '—'
     client_email.short_description = 'Email'
+    
 
     def client_phone(self, obj):
         return obj.client_phone if obj.client_phone else '—'
