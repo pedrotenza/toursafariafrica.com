@@ -1,10 +1,10 @@
 from datetime import datetime
+from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
 from app.models import Booking
 from .email_service import send_booking_request_email, send_booking_confirmation_emails
 
 def create_booking(post_data, safari, request): 
-
     error_message = None
     try:
         name = post_data['name']
@@ -47,10 +47,12 @@ def create_booking(post_data, safari, request):
 def confirm_booking_service(booking_id, request):
     try:
         booking = get_object_or_404(Booking, id=booking_id)
+
         # Simulate payment processing
         booking.confirmed_by_provider = True
         booking.payment_status = 'paid'
-        booking.payment_date = datetime.now()
+        booking.payment_date = now()
+        booking.provider_response_date = now()  # ✅ Registro de fecha de confirmación
         booking.save()
 
         send_booking_confirmation_emails(booking, request)
@@ -73,10 +75,14 @@ def confirm_booking_service(booking_id, request):
 def cancel_booking_service(booking_id):
     try:
         booking = get_object_or_404(Booking, id=booking_id)
+
+        # Simulate refund if paid
         if booking.payment_status == 'paid':
-            # Simulate refund
             print(f"🔄 Simulating refund for booking {booking_id}")
+
+        booking.provider_response_date = now()  # ✅ Registro de fecha de cancelación
         booking.delete()
+
         return """
         <h1>❌ Booking canceled successfully</h1>
         <p>Any simulated payments have been refunded.</p>
