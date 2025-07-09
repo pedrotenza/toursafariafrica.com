@@ -1,3 +1,16 @@
+"""
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+print(f"SMTP_USER: {os.getenv('BREVO_SMTP_USER')}")
+print(f"SMTP_PASSWORD: {os.getenv('BREVO_SMTP_PASSWORD')}")
+print(f"SENDER_EMAIL: {os.getenv('SENDER_EMAIL')}")
+"""
+
+
+
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -5,16 +18,16 @@ from email.mime.application import MIMEApplication
 from .invoice_service import generate_invoice_pdf
 import os
 from dotenv import load_dotenv
-from django.urls import reverse  # Import para reverse
+from django.urls import reverse
 
 load_dotenv()
 
-SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
-SENDER_EMAIL = os.getenv('SENDER_EMAIL')
+SMTP_USER = os.getenv('BREVO_SMTP_USER')  # Ej: 91a3ce001@smtp-brevo.com
+SMTP_PASSWORD = os.getenv('BREVO_SMTP_PASSWORD')  # Ej: XAm8SUgr3DHNtzk0
+SENDER_EMAIL = os.getenv('SENDER_EMAIL')  # Ej: pedro.tenza@outlook.com
 
 
 def request_build_url(request, path_name, booking_id):
-    # Usar reverse para obtener ruta relativa y build_absolute_uri para absoluta
     relative_url = reverse(path_name, args=[booking_id])
     return request.build_absolute_uri(relative_url)
 
@@ -50,9 +63,9 @@ Total Price:          {booking.safari.client_price * booking.number_of_people:.2
         message["From"] = sender
         message["To"] = recipient
 
-        server = smtplib.SMTP("smtp.sendgrid.net", 587)
+        server = smtplib.SMTP("smtp-relay.brevo.com", 587)
         server.starttls()
-        server.login("apikey", SENDGRID_API_KEY)
+        server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(sender, recipient, message.as_string())
         print("✅ Booking request email sent to client.")
 
@@ -141,9 +154,9 @@ Total Price: ${booking.safari.client_price * booking.number_of_people:.2f}
         part_client['Content-Disposition'] = 'attachment; filename="Invoice_Client.pdf"'
         message_client.attach(part_client)
 
-        server = smtplib.SMTP("smtp.sendgrid.net", 587)
+        server = smtplib.SMTP("smtp-relay.brevo.com", 587)
         server.starttls()
-        server.login("apikey", SENDGRID_API_KEY)
+        server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(sender, booking.client_email, message_client.as_string())
 
         print("✅ Confirmation email sent to client.")
