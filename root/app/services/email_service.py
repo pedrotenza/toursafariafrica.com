@@ -1,16 +1,3 @@
-"""
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-
-print(f"SMTP_USER: {os.getenv('BREVO_SMTP_USER')}")
-print(f"SMTP_PASSWORD: {os.getenv('BREVO_SMTP_PASSWORD')}")
-print(f"SENDER_EMAIL: {os.getenv('SENDER_EMAIL')}")
-"""
-
-
-
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -22,9 +9,9 @@ from django.urls import reverse
 
 load_dotenv()
 
-SMTP_USER = os.getenv('BREVO_SMTP_USER')  # Ej: 91a3ce001@smtp-brevo.com
-SMTP_PASSWORD = os.getenv('BREVO_SMTP_PASSWORD')  # Ej: XAm8SUgr3DHNtzk0
-SENDER_EMAIL = os.getenv('SENDER_EMAIL')  # Ej: pedro.tenza@outlook.com
+SMTP_USER = os.getenv('BREVO_SMTP_USER')
+SMTP_PASSWORD = os.getenv('BREVO_SMTP_PASSWORD')
+SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 
 
 def request_build_url(request, path_name, booking_id):
@@ -158,7 +145,6 @@ Total Price: ${booking.safari.client_price * booking.number_of_people:.2f}
         server.starttls()
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(sender, booking.client_email, message_client.as_string())
-
         print("✅ Confirmation email sent to client.")
 
         if booking.safari.provider and booking.safari.provider.email:
@@ -205,3 +191,61 @@ Phone: {booking.client_phone}
 
     except Exception as e:
         print(f"❌ Error sending confirmation emails: {e}")
+
+
+def send_booking_cancellation_emails(booking):
+    try:
+        sender = SENDER_EMAIL
+        server = smtplib.SMTP("smtp-relay.brevo.com", 587)
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+
+        subject = f"{booking.safari.name} – Booking Canceled – {booking.date.strftime('%d.%m.%Y')}"
+
+        # Cliente
+        client_body = f"""
+        <html><body>
+            <p>Dear {booking.client_name},</p>
+            <p>Your booking for <strong>{booking.safari.name}</strong> on {booking.date.strftime('%d‑%m‑%Y')} has been canceled.</p>
+            <p>If you had already paid, the full amount has been refunded.</p>
+            <p>Attached is your cancellation receipt.</p>
+            <p>Best regards,<br>TourSafariAfrica Team</p>
+        </body></html>
+        """
+        msg_client = MIMEMultipart()
+        msg_client["Subject"] = subject
+        msg_client["From"] = sender
+        msg_client["To"] = booking.client_email
+        msg_client.attach(MIMEText(client_body, "html"))
+        invoice_pdf = generate_invoice_pdf(booking, for_provider=False)
+        part_cli = MIMEApplication(invoice_pdf, Name="Cancellation_Receipt_Client.pdf")
+        part_cli["Content-Disposition"] = 'attachment; filename="Cancellation_Receipt_Client.pdf"'
+        msg_client.attach(part_cli)
+        server.sendmail(sender, booking.client_email, msg_client.as_string())
+        print("📧 Cancellation email + receipt sent to client.")
+
+        # Proveedor
+        if booking.safari.provider and booking.safari.provider.email:
+            provider_body = f"""
+            <html><body>
+                <p>Hello {booking.safari.provider.name},</p>
+                <p>The booking for <strong>{booking.safari.name}</strong> on {booking.date.strftime('%d‑%m‑%Y')} has been canceled.</p>
+                <p>Attached is a copy of the cancellation receipt.</p>
+            </body></html>
+            """
+            msg_prov = MIMEMultipart()
+            msg_prov["Subject"] = subject
+            msg_prov["From"] = sender
+            msg_prov["To"] = booking.safari.provider.email
+            msg_prov.attach(MIMEText(provider_body, "html"))
+            invoice_pdf_prov = generate_invoice_pdf(booking, for_provider=True)
+            part_prv = MIMEApplication(invoice_pdf_prov, Name="Cancellation_Receipt_Provider.pdf")
+            part_prv["Content-Disposition"] = 'attachment; filename="Cancellation_Receipt_Provider.pdf"'
+            msg_prov.attach(part_prv)
+            server.sendmail(sender, booking.safari.provider.email, msg_prov.as_string())
+            print("📧 Cancellation email + receipt sent to provider.")
+
+        server.quit()
+
+    except Exception as e:
+        print(f"❌ Error sending cancellation emails: {e}")

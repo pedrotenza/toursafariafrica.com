@@ -104,7 +104,7 @@ class Booking(models.Model):
         ('paid', 'Paid'),
         ('refunded', 'Refunded'),
         ('failed', 'Failed'),
-        ('cancelled', 'Cancelled'),
+        ('canceled', 'Canceled'),  # <-- Aquí corregido a una "l"
     ]
 
     safari = models.ForeignKey(
