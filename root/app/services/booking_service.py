@@ -2,7 +2,7 @@ from datetime import datetime
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
 from app.models import Booking
-from .email_service import send_booking_request_email, send_booking_confirmation_emails
+from .email_service import send_booking_request_email, send_booking_confirmation_emails, send_booking_cancellation_emails
 
 def create_booking(post_data, safari, request): 
     error_message = None
@@ -47,12 +47,10 @@ def create_booking(post_data, safari, request):
 def confirm_booking_service(booking_id, request):
     try:
         booking = get_object_or_404(Booking, id=booking_id)
-
-        # Simulate payment processing
         booking.confirmed_by_provider = True
         booking.payment_status = 'paid'
         booking.payment_date = now()
-        booking.provider_response_date = now()  # ✅ Registro de fecha de confirmación
+        booking.provider_response_date = now()
         booking.save()
 
         send_booking_confirmation_emails(booking, request)
@@ -76,16 +74,18 @@ def cancel_booking_service(booking_id):
     try:
         booking = get_object_or_404(Booking, id=booking_id)
 
-        # Simulate refund if paid
         if booking.payment_status == 'paid':
             print(f"🔄 Simulating refund for booking {booking_id}")
 
-        booking.provider_response_date = now()  # ✅ Registro de fecha de cancelación
-        booking.delete()
+        booking.provider_response_date = now()
+        booking.payment_status = 'canceled'
+        booking.save()
+
+        send_booking_cancellation_emails(booking)
 
         return """
         <h1>❌ Booking canceled successfully</h1>
-        <p>Any simulated payments have been refunded.</p>
+        <p>The booking has been marked as canceled and notifications were sent.</p>
         <p><a href="/">Return to home</a></p>
         """
     except Exception as e:
