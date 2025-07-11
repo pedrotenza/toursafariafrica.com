@@ -31,7 +31,8 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m "08.07.2025 "
+git commit -m " logic for provider booking cancellation Added"
+
 git push
 
 

@@ -19,7 +19,6 @@ class DateRangeFilter(admin.SimpleListFilter):
     parameter_name = 'date_range'
 
     def lookups(self, request, model_admin):
-        # Solo mostrar 'All' si no hay filtro aplicado
         if not request.GET.get(self.parameter_name):
             return [
                 ('last_12_months', 'Last 12 months'),
@@ -50,38 +49,29 @@ class DateRangeFilter(admin.SimpleListFilter):
         if self.value() == 'last_12_months':
             last_year = today - timedelta(days=365)
             return queryset.filter(date__range=[last_year, today])
-            
         if self.value() == 'last_month':
             last_month = today - timedelta(days=30)
             return queryset.filter(date__range=[last_month, today])
-            
         if self.value() == 'last_week':
             last_week = today - timedelta(days=7)
             return queryset.filter(date__range=[last_week, today])
-            
         if self.value() == 'yesterday':
             yesterday = today - timedelta(days=1)
             return queryset.filter(date=yesterday)
-            
         if self.value() == 'today':
             return queryset.filter(date=today)
-            
         if self.value() == 'tomorrow':
             tomorrow = today + timedelta(days=1)
             return queryset.filter(date=tomorrow)
-            
         if self.value() == 'next_week':
             next_week = today + timedelta(days=7)
             return queryset.filter(date__range=[today, next_week])
-            
         if self.value() == 'next_month':
             next_month = today + timedelta(days=30)
             return queryset.filter(date__range=[today, next_month])
-            
         if self.value() == 'next_12_months':
             next_year = today + timedelta(days=365)
             return queryset.filter(date__range=[today, next_year])
-            
         return queryset
 
 # Inlines
@@ -106,10 +96,15 @@ class BookingAdmin(admin.ModelAdmin):
     list_display = (
         'activity_date',
         'safari_name',
-        'participants',
         'booking_date',
         'provider_name',
         'provider_response',
+        'price',
+        'participants',
+        'provider_earnings',
+        'your_profit',
+        'client_payment',
+        'client_unit_price',
         'client_name',
         'client_email',
         'client_phone',
@@ -150,23 +145,46 @@ class BookingAdmin(admin.ModelAdmin):
     provider_name.short_description = 'Provider'
 
     def provider_response(self, obj):
-        # Caso 1 y 2: Si hay fecha de respuesta (aceptado o rechazado)
         if obj.provider_response_date:
-            # Formateamos la fecha (ej: "08/07/2024 14:30")
             response_time = obj.provider_response_date.strftime('%d/%m/%Y %H:%M')
-            
-            # Caso 1: Aceptado (verde)
             if obj.confirmed_by_provider:
                 return format_html('<span style="color: green;">{} (Accepted)</span>', response_time)
-            
-            # Caso 2: Rechazado (rojo)
             elif obj.confirmed_by_provider is False:
                 return format_html('<span style="color: red;">{} (Rejected)</span>', response_time)
-    
-        # Caso 3: Pendiente (naranja)
         return format_html('<span style="color: orange;">Pending</span>')
 
+    def price(self, obj):
+        if obj.safari and obj.safari.provider_price:
+            return f"{obj.safari.provider_price:.2f}"
+        return "—"
+    price.short_description = 'Price'
 
+    def provider_earnings(self, obj):
+        if obj.safari and obj.safari.provider_price:
+            amount = obj.safari.provider_price * obj.number_of_people
+            return format_html('<span style="color: black;">{}</span>', f"{amount:.2f}")
+        return "—"
+    provider_earnings.short_description = 'Prov Earnings'
+
+    def your_profit(self, obj):
+        if obj.safari and obj.safari.provider_price and obj.payment_amount:
+            cost = obj.safari.provider_price * obj.number_of_people
+            profit = obj.payment_amount - cost
+            return format_html('<span style="color: green;">{}</span>', f"{profit:.2f}")
+        return "—"
+    your_profit.short_description = 'Profit'
+
+    def client_payment(self, obj):
+        if obj.payment_amount: 
+            return format_html('<span style="color: black;">{}</span>', obj.payment_amount)
+        return "—"
+    client_payment.short_description = 'Client Paym'
+
+    def client_unit_price(self, obj):
+        if obj.safari and obj.safari.client_price:
+            return f"{obj.safari.client_price:.2f}"
+        return "—"
+    client_unit_price.short_description = 'Price'
 
     def client_name(self, obj):
         return obj.client_name if obj.client_name else '—'
@@ -175,7 +193,6 @@ class BookingAdmin(admin.ModelAdmin):
     def client_email(self, obj):
         return obj.client_email if obj.client_email else '—'
     client_email.short_description = 'Email'
-    
 
     def client_phone(self, obj):
         return obj.client_phone if obj.client_phone else '—'
