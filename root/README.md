@@ -15,6 +15,8 @@ python manage.py migrate
 python manage.py runserver
 
 http://localhost:8000/admin
+http://localhost:8000
+
 
 
 <!--
@@ -31,7 +33,7 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m " logic for provider booking cancellation Added"
+git commit -m " Add colored styling for payments in admin "
 
 git push
 

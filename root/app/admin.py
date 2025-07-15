@@ -10,27 +10,16 @@ from .models import (
     SafariImage,
     SafariItineraryItem,
     HomePage,
-    Provider
+    Provider,
+    Participant
 )
 
-# Filtro de fecha personalizado sin 'All' duplicado
+# Filtro de fecha personalizado
 class DateRangeFilter(admin.SimpleListFilter):
     title = 'Date range'
     parameter_name = 'date_range'
 
     def lookups(self, request, model_admin):
-        if not request.GET.get(self.parameter_name):
-            return [
-                ('last_12_months', 'Last 12 months'),
-                ('last_month', 'Last month'),
-                ('last_week', 'Last week'),
-                ('yesterday', 'Yesterday'),
-                ('today', 'Today'),
-                ('tomorrow', 'Tomorrow'),
-                ('next_week', 'Next week'),
-                ('next_month', 'Next month'),
-                ('next_12_months', 'Next 12 months'),
-            ]
         return [
             ('last_12_months', 'Last 12 months'),
             ('last_month', 'Last month'),
@@ -84,9 +73,17 @@ class SafariItineraryItemInline(admin.TabularInline):
     model = SafariItineraryItem
     extra = 1
 
+class ParticipantInline(admin.TabularInline):
+    model = Participant
+    extra = 1
+    min_num = 1
+    fields = ('nationality', 'age')
+    verbose_name = "Participant"
+    verbose_name_plural = "Participants"
+
 @admin.register(Safari)
 class SafariAdmin(admin.ModelAdmin):
-    list_display = ('name', 'subregion')
+    list_display = ('name', 'subregion', 'min_people', 'max_people')
     list_filter = ('subregion',)
     search_fields = ('name',)
     inlines = [SafariImageInline, SafariItineraryItemInline]
@@ -100,7 +97,8 @@ class BookingAdmin(admin.ModelAdmin):
         'provider_name',
         'provider_response',
         'price',
-        'participants',
+        'participants_count',
+        'participants_info',
         'provider_earnings',
         'your_profit',
         'client_payment',
@@ -108,16 +106,16 @@ class BookingAdmin(admin.ModelAdmin):
         'client_name',
         'client_email',
         'client_phone',
-        'client_nationality',
-        'client_age',
     )
     list_filter = (
         DateRangeFilter,
         'confirmed_by_provider',
+        'payment_status',
     )
     search_fields = ('client_name', 'client_email', 'client_phone')
     list_per_page = 25
     list_select_related = ('safari', 'safari__provider')
+    inlines = [ParticipantInline]
 
     # Custom templates
     change_form_template = 'admin/app/booking/change_form.html'
@@ -132,9 +130,21 @@ class BookingAdmin(admin.ModelAdmin):
         return obj.safari.name if obj.safari else '—'
     safari_name.short_description = 'Activity'
 
-    def participants(self, obj):
+    def participants_count(self, obj):
         return obj.number_of_people
-    participants.short_description = 'Part'
+    participants_count.short_description = 'Part'
+
+    def participants_info(self, obj):
+        participants = obj.participants.all()
+        if not participants.exists():
+            return "No participants"
+        
+        info = []
+        for p in participants:
+            info.append(f"{p.nationality} ({p.age})")
+        
+        return format_html("<br>".join(info))
+    participants_info.short_description = 'Participants Info'
 
     def booking_date(self, obj):
         return obj.booking_datetime.strftime('%d/%m/%Y %H:%M') if obj.booking_datetime else '—'
@@ -152,6 +162,7 @@ class BookingAdmin(admin.ModelAdmin):
             elif obj.confirmed_by_provider is False:
                 return format_html('<span style="color: red;">{} (Rejected)</span>', response_time)
         return format_html('<span style="color: orange;">Pending</span>')
+    provider_response.short_description = 'Prov Response'
 
     def price(self, obj):
         if obj.safari and obj.safari.provider_price:
@@ -176,15 +187,15 @@ class BookingAdmin(admin.ModelAdmin):
 
     def client_payment(self, obj):
         if obj.payment_amount: 
-            return format_html('<span style="color: black;">{}</span>', obj.payment_amount)
+            return format_html('<span style="color: black;">{}</span>', f"{obj.payment_amount:.2f}")
         return "—"
-    client_payment.short_description = 'Client Paym'
+    client_payment.short_description = 'Client Payment'
 
     def client_unit_price(self, obj):
         if obj.safari and obj.safari.client_price:
             return f"{obj.safari.client_price:.2f}"
         return "—"
-    client_unit_price.short_description = 'Price'
+    client_unit_price.short_description = 'Unit Price'
 
     def client_name(self, obj):
         return obj.client_name if obj.client_name else '—'
@@ -197,14 +208,6 @@ class BookingAdmin(admin.ModelAdmin):
     def client_phone(self, obj):
         return obj.client_phone if obj.client_phone else '—'
     client_phone.short_description = 'Phone'
-
-    def client_nationality(self, obj):
-        return obj.client_nationality if obj.client_nationality else '—'
-    client_nationality.short_description = 'Nationality'
-
-    def client_age(self, obj):
-        return obj.client_age if obj.client_age else '—'
-    client_age.short_description = 'Age'
 
     class Media:
         css = {
