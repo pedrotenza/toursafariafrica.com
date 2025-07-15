@@ -3,40 +3,39 @@
 {% block content %}
   <h1>{{ safari.name }}</h1>
 
-  <!-- Image Gallery Section -->
+  <!-- Imágenes -->
   <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
     {% for img in safari.images.all %}
-      <img src="{{ img.image.url }}" alt="Image of {{ safari.name }}" width="300" style="border-radius: 8px;">
+      <img src="{{ img.image.url }}" alt="Imagen {{ safari.name }}" width="300" style="border-radius: 8px;">
     {% empty %}
-      <p>No images available.</p>
+      <p>No hay imágenes disponibles.</p>
     {% endfor %}
   </div>
 
-  <!-- Highlights Section -->
+  <!-- Highlights -->
   {% if highlight_lines %}
-    <section style="margin-bottom: 20px;">
-      <h2>Highlights</h2>
-      <ul style="list-style-type: none; padding-left: 0;">
-        {% for line in highlight_lines %}
-          <li style="position: relative; padding-left: 25px; margin-bottom: 10px;">
-            <span style="position: absolute; left: 0; top: 0;">&#9733;</span>
-            {{ line }}
-          </li>
-        {% endfor %}
-      </ul>
-    </section>
+  <section style="margin-bottom: 20px;">
+    <h2>Highlights</h2>
+    <ul style="list-style: none; padding-left: 0;">
+      {% for line in highlight_lines %}
+      <li style="position: relative; padding-left: 20px; margin-bottom: 10px;">
+        <span style="position: absolute; left: 0; top: 0; color: gold;">&#9733;</span> {{ line }}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
   {% endif %}
 
-  <!-- Itinerary Section -->
+  <!-- Itinerario -->
   <section style="margin-bottom: 20px;">
     <h2>Itinerary</h2>
     {% if safari.itinerary_items.all %}
       <ul style="list-style: none; padding-left: 0;">
         {% for item in safari.itinerary_items.all %}
-          <li style="margin-bottom: 8px; display: flex; align-items: center;">
-            <span style="min-width: 70px; font-weight: bold;">{{ item.time|time:"H:i" }}</span>
-            <span>{{ item.description }}</span>
-          </li>
+        <li style="margin-bottom: 8px; display: flex; align-items: center;">
+          <span style="min-width: 70px; font-weight: bold;">{{ item.time|time:"H:i" }}</span>
+          <span>{{ item.description }}</span>
+        </li>
         {% endfor %}
       </ul>
     {% else %}
@@ -44,50 +43,50 @@
     {% endif %}
   </section>
 
-  <!-- Description Section -->
+  <!-- Descripción -->
   <section style="margin-bottom: 20px;">
     <h2>Description</h2>
     <p>{{ safari.description }}</p>
   </section>
 
-  <!-- Booking Form Section -->
+  <!-- Formulario de reserva -->
   <section>
     <h2>Book This Activity</h2>
 
     {% if error_message %}
-      <p style="color: red; font-weight: bold;">{{ error_message }}</p>
+    <p style="color: red; font-weight: bold;">{{ error_message }}</p>
     {% endif %}
 
-    <form method="POST" style="max-width: 500px;" id="booking-form">
+    <form method="POST" style="max-width: 700px;" id="booking-form">
       {% csrf_token %}
-      
-      <!-- Participants Selector -->
-      <div style="margin-bottom: 15px;">
+
+      <!-- Número de participantes -->
+      <div style="margin-bottom: 20px;">
         <label for="id_number_of_people">Number of Participants:</label>
         <input type="number"
-               id="id_number_of_people"
-               name="number_of_people"
-               min="{{ safari.min_people }}"
-               max="{{ safari.max_people }}"
-               value="{{ safari.min_people }}"
-               required
-               onchange="updateParticipantForms()"
-               style="
-                  width: 100%;
-                  padding: 8px;
-                  border: 2px solid #4CAF50;
-                  border-radius: 10px;
-                  background-color: #eaffea;
-                  color: #333;
-                  margin-top: 8px;">
+          id="id_number_of_people"
+          name="number_of_people"
+          min="{{ safari.min_people }}"
+          max="{{ safari.max_people }}"
+          value="{{ safari.min_people }}"
+          required
+          onchange="updateParticipantFields()"
+          style="
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            background-color: #eaffea;
+            color: #333;
+            margin-top: 8px;">
         <small style="color: gray;">Allowed: {{ safari.min_people }} to {{ safari.max_people }} people</small>
       </div>
 
-      <!-- Main Client Info -->
-      <div class="client-info" style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
-        <h3 style="margin-top: 0;">Main Contact Information</h3>
-        
-        <div>
+      <!-- Contacto principal -->
+      <div style="margin-bottom: 25px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+        <h3>Main Contact Information</h3>
+
+        <div style="margin-bottom: 12px;">
           <label for="id_name">Name:</label>
           <input type="text" id="id_name" name="name" required style="
             width: 100%;
@@ -98,8 +97,8 @@
             color: #333;
             margin-top: 8px;">
         </div>
-        
-        <div>
+
+        <div style="margin-bottom: 12px;">
           <label for="id_email">Email:</label>
           <input type="email" id="id_email" name="email" required style="
             width: 100%;
@@ -110,72 +109,49 @@
             color: #333;
             margin-top: 8px;">
         </div>
-        
+
         <div>
           <label for="id_country_code">Phone:</label>
-          <div style="display: flex; gap: 15px;">
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
             <select id="id_country_code" name="country_code" required style="
-              width: 100%;
+              flex: 0 0 120px;
               padding: 8px;
               border: 2px solid #4CAF50;
               border-radius: 10px;
               background-color: #eaffea;
-              color: #333;
-              margin-top: 8px;">
+              color: #333;">
               <option value="">Select code</option>
             </select>
-            <input type="tel" id="id_phone" name="phone" placeholder="e.g. 712345678" required style="
-              width: 100%;
+            <input type="tel" id="id_phone" name="phone" placeholder="712345678" required style="
+              flex: 1;
               padding: 8px;
               border: 2px solid #4CAF50;
               border-radius: 10px;
               background-color: #eaffea;
-              color: #333;
-              margin-top: 8px;">
+              color: #333;">
           </div>
         </div>
       </div>
 
-      <!-- Participants Information -->
-      <div id="participants-container">
+      <!-- Participantes juntos, alineados -->
+      <div style="margin-bottom: 25px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
         <h3>Participants Information</h3>
-        <div id="participant-forms">
-          <!-- First participant form -->
-          <div class="participant-form" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
-            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-              <h4 style="margin: 0; min-width: 120px;">Participant 1</h4>
-              
-              <div style="flex: 1; min-width: 200px;">
-                <label for="id_participant_nationality_1">Nationality:</label>
-                <select id="id_participant_nationality_1" name="participant_nationality_1" required style="
-                  width: 100%;
-                  padding: 8px;
-                  border: 2px solid #4CAF50;
-                  border-radius: 10px;
-                  background-color: #eaffea;
-                  color: #333;
-                  margin-top: 8px;">
-                  <option value="">Select nationality</option>
-                </select>
-              </div>
-              
-              <div style="flex: 1; min-width: 100px;">
-                <label for="id_participant_age_1">Age:</label>
-                <input type="number" id="id_participant_age_1" name="participant_age_1" min="1" required style="
-                  width: 100%;
-                  padding: 8px;
-                  border: 2px solid #4CAF50;
-                  border-radius: 10px;
-                  background-color: #eaffea;
-                  color: #333;
-                  margin-top: 8px;">
-              </div>
-            </div>
-          </div>
+
+        <div style="display: grid; grid-template-columns: 50px 1fr 100px; gap: 15px; align-items: center; font-weight: bold; padding-bottom: 8px; border-bottom: 2px solid #4CAF50; margin-bottom: 10px;">
+          <div></div>
+          <div>Nationality</div>
+          <div>Age</div>
+        </div>
+
+        <div id="participants-fields">
+
+          <!-- Aquí se añadirán los campos dinámicamente -->
+
         </div>
       </div>
-      
-      <div>
+
+      <!-- Fecha -->
+      <div style="margin-bottom: 20px;">
         <label for="id_date">Date:</label>
         <input type="date" id="id_date" name="date" required style="
           width: 100%;
@@ -186,88 +162,124 @@
           color: #333;
           margin-top: 8px;">
       </div>
-      
+
       <button type="submit" style="
-        padding: 10px 20px;
+        padding: 12px 25px;
         background: #4CAF50;
         color: white;
         border: none;
         border-radius: 10px;
         cursor: pointer;
-        font-size: 14px;
-        margin-top: 10px;">Book Now</button>
+        font-size: 16px;">Book Now</button>
     </form>
   </section>
 
-  <!-- JavaScript -->
+  <!-- Scripts -->
   {% load static %}
   <script src="{% static 'js/country_codes.js' %}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      // Poblamos select país código y nacionalidad
       const countryCodeSelect = document.getElementById("id_country_code");
-      const nationalitySelects = document.querySelectorAll("select[id^='id_participant_nationality_']");
 
-      countryCallingCodes.forEach(country => {
-        const optionCode = document.createElement("option");
-        optionCode.value = country.code;
-        optionCode.textContent = `${country.name} (${country.code})`;
-        countryCodeSelect.appendChild(optionCode);
-
-        nationalitySelects.forEach(select => {
-          const optionNat = document.createElement("option");
-          optionNat.value = country.name;
-          optionNat.textContent = country.name;
-          select.appendChild(optionNat);
+      // Función para llenar un select con países
+      function fillSelectWithCountries(selectElement, includeEmpty = true) {
+        if(includeEmpty) {
+          const emptyOption = document.createElement("option");
+          emptyOption.value = "";
+          emptyOption.textContent = "Select";
+          selectElement.appendChild(emptyOption);
+        }
+        countryCallingCodes.forEach(country => {
+          const option = document.createElement("option");
+          option.value = country.code;
+          option.textContent = `${country.name} (${country.code})`;
+          selectElement.appendChild(option);
         });
-      });
+      }
+
+      fillSelectWithCountries(countryCodeSelect);
+
+      // Actualizar participantes al cargar la página
+      updateParticipantFields();
+
+      // Añadimos evento onchange al número de participantes
+      document.getElementById('id_number_of_people').addEventListener('change', updateParticipantFields);
     });
 
-    function updateParticipantForms() {
-      const numParticipants = parseInt(document.getElementById('id_number_of_people').value);
-      const container = document.getElementById('participant-forms');
-      while (container.children.length > 1) {
-        container.removeChild(container.lastChild);
-      }
-      for (let i = 2; i <= numParticipants; i++) {
-        const formDiv = document.createElement('div');
-        formDiv.className = 'participant-form';
-        formDiv.style = 'margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;';
-        
-        formDiv.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-            <h4 style="margin: 0; min-width: 120px;">Participant ${i}</h4>
-            
-            <div style="flex: 1; min-width: 200px;">
-              <label for="id_participant_nationality_${i}">Nationality:</label>
-              <select id="id_participant_nationality_${i}" name="participant_nationality_${i}" required style="
-                width: 100%;
-                padding: 8px;
-                border: 2px solid #4CAF50;
-                border-radius: 10px;
-                background-color: #eaffea;
-                color: #333;
-                margin-top: 8px;">
-                ${Array.from(document.getElementById('id_participant_nationality_1').options)
-                  .map(opt => `<option value="${opt.value}">${opt.text}</option>`)
-                  .join('')}
-              </select>
-            </div>
-            
-            <div style="flex: 1; min-width: 100px;">
-              <label for="id_participant_age_${i}">Age:</label>
-              <input type="number" id="id_participant_age_${i}" name="participant_age_${i}" min="1" required style="
-                width: 100%;
-                padding: 8px;
-                border: 2px solid #4CAF50;
-                border-radius: 10px;
-                background-color: #eaffea;
-                color: #333;
-                margin-top: 8px;">
-            </div>
-          </div>
+    function updateParticipantFields() {
+      const num = parseInt(document.getElementById('id_number_of_people').value);
+      const container = document.getElementById('participants-fields');
+
+      container.innerHTML = ''; // Limpiar
+
+      for(let i = 1; i <= num; i++) {
+        // Contenedor con grid
+        const row = document.createElement('div');
+        row.style.display = 'grid';
+        row.style.gridTemplateColumns = '50px 1fr 100px';
+        row.style.gap = '15px';
+        row.style.alignItems = 'center';
+        row.style.marginBottom = '10px';
+
+        // Número participante
+        const numDiv = document.createElement('div');
+        numDiv.textContent = i;
+        numDiv.style.fontWeight = 'normal';
+        row.appendChild(numDiv);
+
+        // Nacionalidad (select)
+        const natDiv = document.createElement('div');
+        const natSelect = document.createElement('select');
+        natSelect.name = `participant_nationality_${i}`;
+        natSelect.id = `participant_nationality_${i}`;
+        natSelect.required = true;
+        natSelect.style.cssText = `
+          width: 100%;
+          padding: 8px;
+          border: 2px solid #4CAF50;
+          border-radius: 10px;
+          background-color: #eaffea;
+          color: #333;
         `;
-        
-        container.appendChild(formDiv);
+
+        // Añadimos opción vacía
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = 'Select nationality';
+        natSelect.appendChild(emptyOption);
+
+        // Añadimos todas las nacionalidades
+        countryCallingCodes.forEach(country => {
+          const option = document.createElement('option');
+          option.value = country.name;
+          option.textContent = country.name;
+          natSelect.appendChild(option);
+        });
+
+        natDiv.appendChild(natSelect);
+        row.appendChild(natDiv);
+
+        // Edad (input)
+        const ageDiv = document.createElement('div');
+        const ageInput = document.createElement('input');
+        ageInput.type = 'number';
+        ageInput.name = `participant_age_${i}`;
+        ageInput.id = `participant_age_${i}`;
+        ageInput.min = 1;
+        ageInput.required = true;
+        ageInput.style.cssText = `
+          width: 100%;
+          padding: 8px;
+          border: 2px solid #4CAF50;
+          border-radius: 10px;
+          background-color: #eaffea;
+          color: #333;
+        `;
+        ageDiv.appendChild(ageInput);
+        row.appendChild(ageDiv);
+
+        container.appendChild(row);
       }
     }
   </script>

@@ -33,7 +33,7 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m " Add colored styling for payments in admin "
+git commit -m " Add custom styling to admin booking form fields and include participant age and nationality inputs "
 
 git push
 
