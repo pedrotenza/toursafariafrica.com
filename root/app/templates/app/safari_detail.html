@@ -3,7 +3,7 @@
 {% block content %}
   <h1>{{ safari.name }}</h1>
 
-  <!-- Image Gallery -->
+  <!-- Image Gallery Section -->
   <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
     {% for img in safari.images.all %}
       <img src="{{ img.image.url }}" alt="Image of {{ safari.name }}" width="300" style="border-radius: 8px;">
@@ -12,7 +12,7 @@
     {% endfor %}
   </div>
 
-  <!-- Highlights -->
+  <!-- Highlights Section -->
   {% if highlight_lines %}
     <section style="margin-bottom: 20px;">
       <h2>Highlights</h2>
@@ -27,7 +27,7 @@
     </section>
   {% endif %}
 
-  <!-- Itinerary -->
+  <!-- Itinerary Section -->
   <section style="margin-bottom: 20px;">
     <h2>Itinerary</h2>
     {% if safari.itinerary_items.all %}
@@ -44,84 +44,168 @@
     {% endif %}
   </section>
 
-  <!-- Description -->
+  <!-- Description Section -->
   <section style="margin-bottom: 20px;">
     <h2>Description</h2>
     <p>{{ safari.description }}</p>
   </section>
 
-  <!-- Booking Form -->
+  <!-- Booking Form Section -->
   <section>
-    <h2>Book This Safari</h2>
+    <h2>Book This Activity</h2>
 
     {% if error_message %}
       <p style="color: red; font-weight: bold;">{{ error_message }}</p>
     {% endif %}
 
-    <form method="POST" style="max-width: 500px;">
+    <form method="POST" style="max-width: 500px;" id="booking-form">
       {% csrf_token %}
       
-      <!-- Participants -->
+      <!-- Participants Selector -->
       <div style="margin-bottom: 15px;">
-        <label for="id_number_of_people">Participants:</label><br>
+        <label for="id_number_of_people">Number of Participants:</label>
         <input type="number"
                id="id_number_of_people"
                name="number_of_people"
                min="{{ safari.min_people }}"
                max="{{ safari.max_people }}"
                value="{{ safari.min_people }}"
-               required>
+               required
+               onchange="updateParticipantForms()"
+               style="
+                  width: 100%;
+                  padding: 8px;
+                  border: 2px solid #4CAF50;
+                  border-radius: 10px;
+                  background-color: #eaffea;
+                  color: #333;
+                  margin-top: 8px;">
         <small style="color: gray;">Allowed: {{ safari.min_people }} to {{ safari.max_people }} people</small>
       </div>
 
-      <div style="margin-bottom: 15px;">
-        <label for="id_name">Name:</label><br>
-        <input type="text" id="id_name" name="name" required>
+      <!-- Main Client Info -->
+      <div class="client-info" style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+        <h3 style="margin-top: 0;">Main Contact Information</h3>
+        
+        <div>
+          <label for="id_name">Name:</label>
+          <input type="text" id="id_name" name="name" required style="
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            background-color: #eaffea;
+            color: #333;
+            margin-top: 8px;">
+        </div>
+        
+        <div>
+          <label for="id_email">Email:</label>
+          <input type="email" id="id_email" name="email" required style="
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            background-color: #eaffea;
+            color: #333;
+            margin-top: 8px;">
+        </div>
+        
+        <div>
+          <label for="id_country_code">Phone:</label>
+          <div style="display: flex; gap: 15px;">
+            <select id="id_country_code" name="country_code" required style="
+              width: 100%;
+              padding: 8px;
+              border: 2px solid #4CAF50;
+              border-radius: 10px;
+              background-color: #eaffea;
+              color: #333;
+              margin-top: 8px;">
+              <option value="">Select code</option>
+            </select>
+            <input type="tel" id="id_phone" name="phone" placeholder="e.g. 712345678" required style="
+              width: 100%;
+              padding: 8px;
+              border: 2px solid #4CAF50;
+              border-radius: 10px;
+              background-color: #eaffea;
+              color: #333;
+              margin-top: 8px;">
+          </div>
+        </div>
       </div>
-      
-      <div style="margin-bottom: 15px;">
-        <label for="id_email">Email:</label><br>
-        <input type="email" id="id_email" name="email" required>
-      </div>
-      
-      <div style="margin-bottom: 15px;">
-        <label for="id_country_code">Phone:</label><br>
-        <div style="display: flex; gap: 5px;">
-          <select id="id_country_code" name="country_code" required style="flex: 1;">
-            <option value="">Select code</option>
-          </select>
-          <input type="tel" id="id_phone" name="phone" placeholder="e.g. 712345678" required style="flex: 2;">
+
+      <!-- Participants Information -->
+      <div id="participants-container">
+        <h3>Participants Information</h3>
+        <div id="participant-forms">
+          <!-- First participant form -->
+          <div class="participant-form" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+              <h4 style="margin: 0; min-width: 120px;">Participant 1</h4>
+              
+              <div style="flex: 1; min-width: 200px;">
+                <label for="id_participant_nationality_1">Nationality:</label>
+                <select id="id_participant_nationality_1" name="participant_nationality_1" required style="
+                  width: 100%;
+                  padding: 8px;
+                  border: 2px solid #4CAF50;
+                  border-radius: 10px;
+                  background-color: #eaffea;
+                  color: #333;
+                  margin-top: 8px;">
+                  <option value="">Select nationality</option>
+                </select>
+              </div>
+              
+              <div style="flex: 1; min-width: 100px;">
+                <label for="id_participant_age_1">Age:</label>
+                <input type="number" id="id_participant_age_1" name="participant_age_1" min="1" required style="
+                  width: 100%;
+                  padding: 8px;
+                  border: 2px solid #4CAF50;
+                  border-radius: 10px;
+                  background-color: #eaffea;
+                  color: #333;
+                  margin-top: 8px;">
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
-      <div style="margin-bottom: 15px;">
-        <label for="id_nationality">Nationality:</label><br>
-        <select id="id_nationality" name="nationality" required style="width: 100%; padding: 6px;">
-          <option value="">Select your nationality</option>
-        </select>
+      <div>
+        <label for="id_date">Date:</label>
+        <input type="date" id="id_date" name="date" required style="
+          width: 100%;
+          padding: 8px;
+          border: 2px solid #4CAF50;
+          border-radius: 10px;
+          background-color: #eaffea;
+          color: #333;
+          margin-top: 8px;">
       </div>
       
-      <div style="margin-bottom: 15px;">
-        <label for="id_age">Age:</label><br>
-        <input type="number" id="id_age" name="age" min="0" required>
-      </div>
-      
-      <div style="margin-bottom: 15px;">
-        <label for="id_date">Date:</label><br>
-        <input type="date" id="id_date" name="date" required>
-      </div>
-      
-      <button type="submit" style="margin-top: 10px;">Book Now</button>
+      <button type="submit" style="
+        padding: 10px 20px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;">Book Now</button>
     </form>
   </section>
 
-  <!-- JavaScript to load country codes and nationalities -->
+  <!-- JavaScript -->
   {% load static %}
   <script src="{% static 'js/country_codes.js' %}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const countryCodeSelect = document.getElementById("id_country_code");
-      const nationalitySelect = document.getElementById("id_nationality");
+      const nationalitySelects = document.querySelectorAll("select[id^='id_participant_nationality_']");
 
       countryCallingCodes.forEach(country => {
         const optionCode = document.createElement("option");
@@ -129,11 +213,62 @@
         optionCode.textContent = `${country.name} (${country.code})`;
         countryCodeSelect.appendChild(optionCode);
 
-        const optionNat = document.createElement("option");
-        optionNat.value = country.name;
-        optionNat.textContent = country.name;
-        nationalitySelect.appendChild(optionNat);
+        nationalitySelects.forEach(select => {
+          const optionNat = document.createElement("option");
+          optionNat.value = country.name;
+          optionNat.textContent = country.name;
+          select.appendChild(optionNat);
+        });
       });
     });
+
+    function updateParticipantForms() {
+      const numParticipants = parseInt(document.getElementById('id_number_of_people').value);
+      const container = document.getElementById('participant-forms');
+      while (container.children.length > 1) {
+        container.removeChild(container.lastChild);
+      }
+      for (let i = 2; i <= numParticipants; i++) {
+        const formDiv = document.createElement('div');
+        formDiv.className = 'participant-form';
+        formDiv.style = 'margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;';
+        
+        formDiv.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <h4 style="margin: 0; min-width: 120px;">Participant ${i}</h4>
+            
+            <div style="flex: 1; min-width: 200px;">
+              <label for="id_participant_nationality_${i}">Nationality:</label>
+              <select id="id_participant_nationality_${i}" name="participant_nationality_${i}" required style="
+                width: 100%;
+                padding: 8px;
+                border: 2px solid #4CAF50;
+                border-radius: 10px;
+                background-color: #eaffea;
+                color: #333;
+                margin-top: 8px;">
+                ${Array.from(document.getElementById('id_participant_nationality_1').options)
+                  .map(opt => `<option value="${opt.value}">${opt.text}</option>`)
+                  .join('')}
+              </select>
+            </div>
+            
+            <div style="flex: 1; min-width: 100px;">
+              <label for="id_participant_age_${i}">Age:</label>
+              <input type="number" id="id_participant_age_${i}" name="participant_age_${i}" min="1" required style="
+                width: 100%;
+                padding: 8px;
+                border: 2px solid #4CAF50;
+                border-radius: 10px;
+                background-color: #eaffea;
+                color: #333;
+                margin-top: 8px;">
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(formDiv);
+      }
+    }
   </script>
 {% endblock %}

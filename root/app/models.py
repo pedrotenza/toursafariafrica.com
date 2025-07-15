@@ -24,7 +24,7 @@ class SubRegion(models.Model):
 class Provider(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
-    whatsapp_number = models.CharField(max_length=20, blank=True)  # Podría ser opcional
+    whatsapp_number = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return self.name
@@ -49,7 +49,7 @@ class Safari(models.Model):
     min_people = models.PositiveIntegerField(default=1)
     max_people = models.PositiveIntegerField(default=10)
 
-    # Precios
+    # Pricing
     provider_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -60,7 +60,7 @@ class Safari(models.Model):
         decimal_places=2,
         default=0,
         verbose_name="Commission (%)",
-        help_text= "Commission rate (%)"
+        help_text="Commission rate (%)"
     )
     client_price = models.DecimalField(
         max_digits=10,
@@ -104,7 +104,7 @@ class Booking(models.Model):
         ('paid', 'Paid'),
         ('refunded', 'Refunded'),
         ('failed', 'Failed'),
-        ('canceled', 'Canceled'),  # <-- Aquí corregido a una "l"
+        ('canceled', 'Canceled'),
     ]
 
     safari = models.ForeignKey(
@@ -118,14 +118,12 @@ class Booking(models.Model):
     client_name = models.CharField(max_length=100)
     client_email = models.EmailField()
     client_phone = models.CharField(max_length=20)
-    client_nationality = models.CharField(max_length=50)
-    client_age = models.PositiveIntegerField()
 
-    # Confirmación proveedor
+    # Provider confirmation
     confirmed_by_provider = models.BooleanField(default=False)
     provider_response_date = models.DateTimeField(null=True, blank=True)
 
-    # Pago
+    # Payment
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
@@ -142,19 +140,20 @@ class Booking(models.Model):
         max_length=50,
         blank=True,
         null=True,
-        help_text="Método de pago utilizado (simulado por ahora)"
+        help_text="Payment method used"
     )
     transaction_id = models.CharField(
         max_length=100,
         blank=True,
         null=True,
-        help_text="ID de transacción (simulado por ahora)"
+        help_text="Transaction ID"
     )
 
     def __str__(self):
         return f"{self.client_name} – {self.date}"
 
     def clean(self):
+        # Validate number of people against safari limits
         if self.number_of_people < self.safari.min_people:
             raise ValidationError(
                 {"number_of_people": f"Minimum number of people is {self.safari.min_people}."}
@@ -163,14 +162,51 @@ class Booking(models.Model):
             raise ValidationError(
                 {"number_of_people": f"Maximum number of people is {self.safari.max_people}."}
             )
+        
+        # Validate date is not in the past
         if self.date < timezone.localdate():
             raise ValidationError({"date": "Booking date cannot be in the past."})
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # Validar antes de guardar
-        # Calcular monto total si no está asignado (o recalcular si cambian personas o safari)
-        self.payment_amount = self.safari.client_price * self.number_of_people
+        self.full_clean()
+        
+        # Calculate total payment amount
+        if self.safari and self.number_of_people:
+            self.payment_amount = self.safari.client_price * self.number_of_people
+        
         super().save(*args, **kwargs)
+
+    def validate_participants(self):
+        """
+        Validates that the number of participants matches the booking count
+        Should be called after the booking is saved and participants are added
+        """
+        actual_participants = self.participants.count()
+        if actual_participants != self.number_of_people:
+            raise ValidationError(
+                f"Number of participants ({actual_participants}) doesn't match booking count ({self.number_of_people})"
+            )
+
+
+class Participant(models.Model):
+    booking = models.ForeignKey(
+        Booking,
+        on_delete=models.CASCADE,
+        related_name='participants'
+    )
+    nationality = models.CharField(max_length=50)
+    age = models.PositiveIntegerField()
+
+    def clean(self):
+        if self.age < 1:
+            raise ValidationError({"age": "Age must be at least 1 year."})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Participant ({self.nationality}, {self.age} years) for {self.booking.client_name}"
 
 
 class SafariItineraryItem(models.Model):
@@ -184,6 +220,8 @@ class SafariItineraryItem(models.Model):
 
     class Meta:
         ordering = ['time']
+        verbose_name = "Itinerary Item"
+        verbose_name_plural = "Itinerary Items"
 
     def __str__(self):
         return f"{self.time.strftime('%H:%M')} – {self.description}"
@@ -197,7 +235,7 @@ class HomePage(models.Model):
         upload_to='homepage/hero/videos/',
         blank=True,
         null=True,
-        help_text="Sube un archivo de video (formato .mp4 recomendado)"
+        help_text="Upload a video file (recommended .mp4 format)"
     )
     why_choose_title = models.CharField(max_length=200)
 
