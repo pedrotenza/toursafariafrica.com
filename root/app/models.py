@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+
 class Region(models.Model):
     name = models.CharField(max_length=100)
 
@@ -49,7 +50,6 @@ class Safari(models.Model):
     min_people = models.PositiveIntegerField(default=1)
     max_people = models.PositiveIntegerField(default=10)
 
-    # Pricing
     provider_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -119,11 +119,9 @@ class Booking(models.Model):
     client_email = models.EmailField()
     client_phone = models.CharField(max_length=20)
 
-    # Provider confirmation
     confirmed_by_provider = models.BooleanField(default=False)
     provider_response_date = models.DateTimeField(null=True, blank=True)
 
-    # Payment
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
@@ -153,34 +151,24 @@ class Booking(models.Model):
         return f"{self.client_name} – {self.date}"
 
     def clean(self):
-        # Validate number of people against safari limits
         if self.number_of_people < self.safari.min_people:
-            raise ValidationError(
-                {"number_of_people": f"Minimum number of people is {self.safari.min_people}."}
-            )
+            raise ValidationError({
+                "number_of_people": f"Minimum number of people is {self.safari.min_people}."
+            })
         if self.number_of_people > self.safari.max_people:
-            raise ValidationError(
-                {"number_of_people": f"Maximum number of people is {self.safari.max_people}."}
-            )
-        
-        # Validate date is not in the past
+            raise ValidationError({
+                "number_of_people": f"Maximum number of people is {self.safari.max_people}."
+            })
         if self.date < timezone.localdate():
             raise ValidationError({"date": "Booking date cannot be in the past."})
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        
-        # Calculate total payment amount
         if self.safari and self.number_of_people:
             self.payment_amount = self.safari.client_price * self.number_of_people
-        
         super().save(*args, **kwargs)
 
     def validate_participants(self):
-        """
-        Validates that the number of participants matches the booking count
-        Should be called after the booking is saved and participants are added
-        """
         actual_participants = self.participants.count()
         if actual_participants != self.number_of_people:
             raise ValidationError(
@@ -241,13 +229,10 @@ class HomePage(models.Model):
 
     title_1 = models.CharField(max_length=100)
     description_1 = models.TextField()
-
     title_2 = models.CharField(max_length=100)
     description_2 = models.TextField()
-
     title_3 = models.CharField(max_length=100)
     description_3 = models.TextField()
-
     title_4 = models.CharField(max_length=100)
     description_4 = models.TextField()
 
