@@ -98,7 +98,8 @@ class BookingAdmin(admin.ModelAdmin):
         'provider_response',
         'price',
         'participants_count',
-        'participants_info',
+        'participants_ages',
+        'participants_nationalities',
         'provider_earnings',
         'your_profit',
         'client_payment',
@@ -134,17 +135,21 @@ class BookingAdmin(admin.ModelAdmin):
         return obj.number_of_people
     participants_count.short_description = 'Part'
 
-    def participants_info(self, obj):
+    def participants_ages(self, obj):
         participants = obj.participants.all()
         if not participants.exists():
-            return "No participants"
-        
-        info = []
-        for p in participants:
-            info.append(f"{p.nationality} ({p.age})")
-        
-        return format_html("<br>".join(info))
-    participants_info.short_description = 'Participants Info'
+            return "—"
+        ages = [str(p.age) for p in participants if p.age is not None]
+        return format_html("<br>".join(ages))
+    participants_ages.short_description = 'Ages'
+
+    def participants_nationalities(self, obj):
+        participants = obj.participants.all()
+        if not participants.exists():
+            return "—"
+        nationalities = [p.nationality for p in participants if p.nationality]
+        return format_html("<br>".join(nationalities))
+    participants_nationalities.short_description = 'Nationalities'
 
     def booking_date(self, obj):
         return obj.booking_datetime.strftime('%d/%m/%Y %H:%M') if obj.booking_datetime else '—'

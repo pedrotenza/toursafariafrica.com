@@ -1,47 +1,73 @@
 from datetime import datetime
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
-from app.models import Booking
-from .email_service import send_booking_request_email, send_booking_confirmation_emails, send_booking_cancellation_emails
+from app.models import Booking, Participant
+from .email_service import (
+    send_booking_request_email,
+    send_booking_confirmation_emails,
+    send_booking_cancellation_emails
+)
 
-def create_booking(post_data, safari, request): 
+def create_booking(post_data, safari, request):
     error_message = None
     try:
         name = post_data['name']
         email = post_data['email']
         phone = post_data.get('phone', '')
-        nationality = post_data.get('nationality', '')
-        age = int(post_data.get('age', 0))
         date_str = post_data['date']
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
         number_of_people = int(post_data.get('number_of_people', 1))
 
         if safari.min_people and number_of_people < safari.min_people:
-            error_message = f"Minimum number of people is {safari.min_people}."
-            return None, error_message
+            return None, f"Minimum number of people is {safari.min_people}."
         if safari.max_people and number_of_people > safari.max_people:
-            error_message = f"Maximum number of people is {safari.max_people}."
-            return None, error_message
+            return None, f"Maximum number of people is {safari.max_people}."
 
+        # Crear la reserva
         booking = Booking.objects.create(
             safari=safari,
             client_name=name,
             client_email=email,
             client_phone=phone,
-            client_nationality=nationality,
-            client_age=age,
             date=date,
             number_of_people=number_of_people,
             payment_status='pending',
             confirmed_by_provider=False
         )
 
+        # Capturar los participantes dinámicos
+        participants = []
+        for i in range(1, number_of_people + 1):
+            nationality_key = f'participant_nationality_{i}'
+            age_key = f'participant_age_{i}'
+
+            nationality = post_data.get(nationality_key)
+            age = post_data.get(age_key)
+
+            if nationality and age:
+                try:
+                    age = int(age)
+                    if age > 0:
+                        participants.append(Participant(
+                            booking=booking,
+                            nationality=nationality,
+                            age=age
+                        ))
+                except ValueError:
+                    continue  # Ignora edades inválidas
+
+        if not participants:
+            return None, "Participant data is incomplete or invalid."
+
+        Participant.objects.bulk_create(participants)
+
+        # Enviar notificaciones
         send_booking_request_email(booking, request)
         return booking, None
+
     except Exception as e:
-        error_message = "Error processing booking data."
         print(f"❌ Error in create_booking: {e}")
-        return None, error_message
+        return None, "Error processing booking data."
 
 
 def confirm_booking_service(booking_id, request):
