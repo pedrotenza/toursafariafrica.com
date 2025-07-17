@@ -83,6 +83,17 @@ Total Price:   {booking.safari.client_price * booking.number_of_people:.2f}
                 confirm_url = request_build_url(request, 'confirm_booking', booking.id)
                 cancel_url = request_build_url(request, 'cancel_booking', booking.id)
 
+                # Construir detalles de participantes para el email al provider
+                participants_details = ""
+                if participants_list:
+                    for idx, participant in enumerate(participants_list, 1):
+                        # participants_data es lista de dict, Participant objs tienen atributos
+                        age = participant.get('age') if isinstance(participant, dict) else participant.age
+                        nationality = participant.get('nationality') if isinstance(participant, dict) else participant.nationality
+                        participants_details += f"Participant {idx}: Age {age} | Nationality: {nationality}\n"
+                else:
+                    participants_details = "No participant details provided"
+
                 # Para el proveedor, formato HTML con links clicables
                 provider_body = f"""
                 <html>
@@ -100,8 +111,8 @@ Amount to Be Paid to You:  {booking.safari.provider_price * booking.number_of_pe
                     <p>Client Details:</p>
                     <pre>
 Name:        {booking.client_name}
-Age:         {participants_list[0].age if participants_list else 'N/A'}
-Nationality: {participants_list[0].nationality if participants_list else 'N/A'}
+
+{participants_details}
                     </pre>
                     <p>To <b>CONFIRM</b> the booking, click here:<br>
                        <a href="{confirm_url}">{confirm_url}</a></p>
