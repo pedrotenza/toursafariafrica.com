@@ -1,87 +1,87 @@
-import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from PIL import Image, ImageFilter, ImageOps
-import requests
-from io import BytesIO
 
-# --- 1. Set up the map ---
-fig = plt.figure(figsize=(12, 10))
+# --- 1. CONFIGURACIÓN DEL MAPA ---
+fig = plt.figure(figsize=(14, 12))
 ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
-ax.set_extent([10, 30, -35, -17])  # Roughly Namibia, Botswana, South Africa
+ax.set_extent([12, 34, -35, -17])  # Más amplio para incluir toda Sudáfrica
 
-# Add geographic features
-ax.add_feature(cfeature.LAND, color='#e6d8ad')  # Parchment-like land
-ax.add_feature(cfeature.OCEAN, color='#8b9fa6')  # Aged blue ocean
-ax.add_feature(cfeature.BORDERS, linestyle=':', linewidth=1, edgecolor='#5a3921')  # Country borders
-ax.add_feature(cfeature.RIVERS, edgecolor='#5a8fad')  # Rivers
-ax.add_feature(cfeature.LAKES, edgecolor='#5a8fad', facecolor='#8b9fa6')
-
-# --- 2. Label key locations ---
+# --- 2. UBICACIONES PRECISAS (VERIFICADAS) ---
 locations = {
-    # Namibia
-    "Etosha": {"xy": (16.5, -18.75), "color": "#5a3921", "icon": "🦓"},
-    "Sossusvlei": {"xy": (15.8, -24.7), "color": "#a6421a", "icon": "🏜️"},
-    # South Africa
-    "Kruger": {"xy": (31.5, -24.0), "color": "#5a3921", "icon": "🦁"},
-    # Botswana
-    "Okavango": {"xy": (22.4, -19.3), "color": "#5a3921", "icon": "🌿"},
-    "Chobe": {"xy": (24.7, -18.6), "color": "#5a3921", "icon": "🐘"},
+    "Etosha": {"xy": (16.5, -18.75), "color": "#2d1a0f"},
+    "Sossusvlei": {"xy": (15.8, -24.76), "color": "#8c4c2b"},
+    "Okavango": {"xy": (22.45, -19.25), "color": "#1f3d2a"},
+    "Chobe": {"xy": (25.2, -17.8), "color": "#3b5a3c"},
+    "Kruger": {"xy": (31.5, -24.0), "color": "#2d1a0f"},
 }
 
+# --- 3. ELEMENTOS GEOGRÁFICOS ---
+ax.add_feature(cfeature.LAND, color='#f5e8c9')  
+ax.add_feature(cfeature.OCEAN, color='#a8c4bb')  
+ax.add_feature(cfeature.BORDERS, linestyle='--', linewidth=1.2, edgecolor='#5a3921')
+ax.add_feature(cfeature.RIVERS, edgecolor='#5a8fad', linewidth=1.5)
+ax.add_feature(cfeature.LAKES, edgecolor='#5a8fad', facecolor='#a8c4bb')
+
+# --- 4. AÑADIR MARCADORES ---
 for name, props in locations.items():
     ax.annotate(
-        props["icon"] + " " + name,
+        name,
         xy=props["xy"],
         xycoords=ccrs.PlateCarree(),
         color=props["color"],
-        fontsize=12,
-        fontfamily="serif",
+        fontsize=14,
+        fontfamily="DejaVu Serif",
         ha="center",
-        bbox=dict(boxstyle="round,pad=0.2", fc="#f0e6cc", ec="none", alpha=0.7),
+        va="center"
     )
 
-# --- 3. Add medieval-style decorations ---
-ax.annotate(
-    "Here be Lions",
-    xy=(25, -28),
-    xycoords=ccrs.PlateCarree(),
-    color="#5a3921",
-    fontsize=10,
-    fontstyle="italic",
-    ha="center",
-)
+# --- 5. ETIQUETAS DE PAÍSES ---
+country_labels = {
+    "NAMIBIA": {"xy": (17.5, -21.5), "fontsize": 18, "color": "#2d1a0f"},
+    "BOTSWANA": {"xy": (24.0, -21.0), "fontsize": 18, "color": "#2d1a0f"},
+    "SOUTH AFRICA": {"xy": (24.5, -30.0), "fontsize": 18, "color": "#2d1a0f"}
+}
 
-# Compass Rose
-ax.annotate(
-    "▲\nN",
-    xy=(28, -18),
-    xycoords=ccrs.PlateCarree(),
-    color="#5a3921",
-    fontsize=16,
-    ha="center",
-    va="center",
-)
+for country, props in country_labels.items():
+    ax.annotate(
+        country,
+        xy=props["xy"],
+        xycoords=ccrs.PlateCarree(),
+        color=props["color"],
+        fontsize=props["fontsize"],
+        fontfamily="DejaVu Serif",
+        fontweight="bold",
+        ha="center",
+        va="center"
+    )
 
-# --- 4. Export and age the map ---
-plt.savefig("africa_map.png", dpi=300, bbox_inches="tight", pad_inches=0.2)
-plt.close()
+# --- 6. ELEMENTOS DECORATIVOS ---
+ax.annotate("▲ NORTE", xy=(30.5, -18.5), color="#2d1a0f", fontsize=12, ha="center")
+ax.annotate("Here be Lions", xy=(25.5, -25.8), color="#5a3921", fontstyle="italic", ha="center")
 
-# --- 5. Apply parchment texture & aging ---
-# Load a parchment texture (or generate one)
-texture_url = "https://raw.githubusercontent.com/python-visualization/folium/main/examples/data/parchment_texture.jpg"
-texture = Image.open(BytesIO(requests.get(texture_url).content)).resize((1200, 1000))
+# --- 7. EXPORTAR MAPA BASE ---
+plt.savefig("africa_map.png", dpi=300, bbox_inches="tight", pad_inches=0.3, facecolor='#f5e8c9')
 
-# Load the map and blend with texture
-map_img = Image.open("africa_map.png").convert("RGBA")
-texture = texture.convert("RGBA")
-final_map = Image.blend(map_img, texture, alpha=0.4)
+# No plt.close() ni plt.show() aquí — dejamos que el archivo quede guardado.
 
-# Add burn marks (optional)
-final_map.filter(ImageFilter.GaussianBlur(0.5))  # Soften edges
-final_map = ImageOps.autocontrast(final_map, cutoff=2)
+# --- 8. PROCESAMIENTO DE IMAGEN ---
+def apply_parchment_effect(input_path, output_path):
+    map_img = Image.open(input_path).convert('RGB')
+    w, h = map_img.size
 
-# Save final map
-final_map.save("medieval_africa_map.png")
-print("Map generated: medieval_africa_map.png")
+    texture = Image.new('RGB', (w, h), '#f5e8c9')
+    pixels = texture.load()
+    for i in range(w):
+        for j in range(h):
+            if (i + j) % 20 < 10:
+                pixels[i,j] = (210, 190, 160)
+
+    final = Image.blend(map_img, texture, alpha=0.25)
+    final = final.filter(ImageFilter.GaussianBlur(radius=0.8))
+    final = ImageOps.autocontrast(final, cutoff=2)
+    final.save(output_path)
+
+apply_parchment_effect("africa_map.png", "medieval_africa_final.png")
+print("✅ Mapa generado: 'medieval_africa_final.png'")

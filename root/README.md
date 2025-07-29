@@ -33,7 +33,7 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m " Group participant information fields "
+git commit -m "Add participant age and nationality to provider booking request email"
 
 git push
 
