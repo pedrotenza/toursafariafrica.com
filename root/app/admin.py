@@ -167,7 +167,7 @@ class BookingAdmin(admin.ModelAdmin):
             elif obj.confirmed_by_provider is False:
                 return format_html('<span style="color: red;">{} (Rejected)</span>', response_time)
         return format_html('<span style="color: orange;">Pending</span>')
-    provider_response.short_description = 'Prov Response'
+    provider_response.short_description = 'Prov Resp'
 
     def price(self, obj):
         if obj.safari and obj.safari.provider_price:
@@ -180,7 +180,7 @@ class BookingAdmin(admin.ModelAdmin):
             amount = obj.safari.provider_price * obj.number_of_people
             return format_html('<span style="color: black;">{}</span>', f"{amount:.2f}")
         return "—"
-    provider_earnings.short_description = 'Prov Earnings'
+    provider_earnings.short_description = 'Prov Earns'
 
     def your_profit(self, obj):
         if obj.safari and obj.safari.provider_price and obj.payment_amount:
@@ -194,7 +194,7 @@ class BookingAdmin(admin.ModelAdmin):
         if obj.payment_amount: 
             return format_html('<span style="color: black;">{}</span>', f"{obj.payment_amount:.2f}")
         return "—"
-    client_payment.short_description = 'Client Payment'
+    client_payment.short_description = 'Client Pay'
 
     def client_unit_price(self, obj):
         if obj.safari and obj.safari.client_price:
@@ -216,9 +216,9 @@ class BookingAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            'all': ('app/css/admin_custom.css',)
+            'all': ('app/css/admin_custom.css?v=2.1',)
         }
-        js = ('app/js/admin_custom.js',)
+        js = ('app/js/admin_custom.js?v=2.1',)
 
 @admin.register(Region)
 class RegionAdmin(admin.ModelAdmin):

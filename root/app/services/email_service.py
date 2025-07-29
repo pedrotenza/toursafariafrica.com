@@ -30,11 +30,11 @@ def send_booking_request_email(booking, request, participants_data=None):
         participants_info = []
         participants_list = []
         if participants_data:
+            participants_list = participants_data
             for idx, participant in enumerate(participants_data, 1):
                 participants_info.append(
                     f"• Participant {idx}: Age {participant.get('age', 'N/A')} | Nationality: {participant.get('nationality', 'N/A')}"
                 )
-            participants_list = participants_data
         else:
             try:
                 participants = Participant.objects.filter(booking=booking).order_by('id')
@@ -46,23 +46,57 @@ def send_booking_request_email(booking, request, participants_data=None):
             except Exception as e:
                 print(f"Error getting participants: {str(e)}")
 
-        participants_text = "\n".join(participants_info) if participants_info else "No participant details provided"
+        # Construir tabla HTML para detalles de participantes (cliente)
+        if participants_list:
+            participants_table = """
+            <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
+              <thead style="background-color: #f2f2f2;">
+                <tr>
+                  <th>Participant</th>
+                  <th>Age</th>
+                  <th>Nationality</th>
+                </tr>
+              </thead>
+              <tbody>
+            """
+            for i, p in enumerate(participants_list, 1):
+                if isinstance(p, dict):
+                    age = p.get('age', 'N/A')
+                    nationality = p.get('nationality', 'N/A')
+                else:
+                    age = getattr(p, 'age', 'N/A')
+                    nationality = getattr(p, 'nationality', 'N/A')
+                participants_table += f"""
+                <tr>
+                  <td style="text-align: center;">{i}</td>
+                  <td style="text-align: center;">{age}</td>
+                  <td style="text-align: center;">{nationality}</td>
+                </tr>
+                """
+            participants_table += """
+              </tbody>
+            </table>
+            """
+        else:
+            participants_table = "<p>No participant details provided.</p>"
 
-        # Email para el cliente (HTML)
+        # Email para el cliente (HTML) con tabla en lugar de <pre>
         client_body = f"""
         <html>
           <body>
             <p>Dear {booking.client_name},</p>
             <p>Thank you for your booking request:</p>
             <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
-            <pre>
-Date:          {booking.date.strftime("%d-%m-%Y")}
-Participants:  {booking.number_of_people}
-Total Price:   {booking.safari.client_price * booking.number_of_people:.2f}
+            <pre style="font-family: monospace; font-size: 14px;">
+        Selected Date:           {booking.date.strftime("%d-%m-%Y")}
+        Price per Person:        {booking.safari.client_price:.2f}
+        Number of Participants:  {booking.number_of_people}
+        _________________________________________
+        Amount to Be Paid:       {(booking.safari.client_price * booking.number_of_people):.2f}
             </pre>
             <p>Participants Details:</p>
-            <pre>{participants_text}</pre>
-            <p>We will contact you soon with the confirmation.</p>
+            {participants_table}
+            <p>Your booking awaits operator confirmation. We'll contact you once confirmed — no payment will be processed until then.</p>
             <p>Best regards,<br>TourSafariAfrica Team</p>
           </body>
         </html>
@@ -83,37 +117,57 @@ Total Price:   {booking.safari.client_price * booking.number_of_people:.2f}
                 confirm_url = request_build_url(request, 'confirm_booking', booking.id)
                 cancel_url = request_build_url(request, 'cancel_booking', booking.id)
 
-                # Construir detalles de participantes para el email al provider
-                participants_details = ""
+                # Construir tabla HTML para detalles de participantes para el provider (igual que para el cliente)
                 if participants_list:
-                    for idx, participant in enumerate(participants_list, 1):
-                        # participants_data es lista de dict, Participant objs tienen atributos
-                        age = participant.get('age') if isinstance(participant, dict) else participant.age
-                        nationality = participant.get('nationality') if isinstance(participant, dict) else participant.nationality
-                        participants_details += f"Participant {idx}: Age {age} | Nationality: {nationality}\n"
+                    participants_table_provider = """
+                    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
+                      <thead style="background-color: #f2f2f2;">
+                        <tr>
+                          <th>Participant</th>
+                          <th>Age</th>
+                          <th>Nationality</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                    """
+                    for i, p in enumerate(participants_list, 1):
+                        if isinstance(p, dict):
+                            age = p.get('age', 'N/A')
+                            nationality = p.get('nationality', 'N/A')
+                        else:
+                            age = getattr(p, 'age', 'N/A')
+                            nationality = getattr(p, 'nationality', 'N/A')
+                        participants_table_provider += f"""
+                        <tr>
+                          <td style="text-align: center;">{i}</td>
+                          <td style="text-align: center;">{age}</td>
+                          <td style="text-align: center;">{nationality}</td>
+                        </tr>
+                        """
+                    participants_table_provider += """
+                      </tbody>
+                    </table>
+                    """
                 else:
-                    participants_details = "No participant details provided"
+                    participants_table_provider = "<p>No participant details provided.</p>"
 
-                # Para el proveedor, formato HTML con links clicables
                 provider_body = f"""
                 <html>
                   <body>
                     <p>Hello {booking.safari.provider.name if hasattr(booking.safari.provider, 'name') else 'Simon'},</p>
-                    <p>A new booking request has been made for the safari:</p>
+                    <p>A new booking request has been made for the Activity:</p>
                     <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
                     <pre>
 Selected Date:             {booking.date.strftime("%d-%m-%Y")}
 Price per Person:          {booking.safari.provider_price:.2f}
 Number of Participants:    {booking.number_of_people}
----------------------------------------------
+_________________________________________
 Amount to Be Paid to You:  {booking.safari.provider_price * booking.number_of_people:.2f}
                     </pre>
                     <p>Client Details:</p>
-                    <pre>
-Name:        {booking.client_name}
-
-{participants_details}
-                    </pre>
+                    <p><b>Name:</b> {booking.client_name}</p>
+                    <p><b>Participants Details:</b></p>
+                    {participants_table_provider}
                     <p>To <b>CONFIRM</b> the booking, click here:<br>
                        <a href="{confirm_url}">{confirm_url}</a></p>
                     <p>To <b>CANCEL</b> the booking, click here:<br>
@@ -142,33 +196,69 @@ def send_booking_confirmation_emails(booking, request):
         sender = SENDER_EMAIL
         subject = f"{booking.safari.name} – Booking Confirmed – {booking.date.strftime('%d.%m.%Y')}"
 
-        # Obtener detalles de participantes
-        participants_info = []
-        try:
-            participants = Participant.objects.filter(booking=booking).order_by('id')
-            for idx, participant in enumerate(participants, 1):
-                participants_info.append(
-                    f"• Participant {idx}: Age {participant.age} | Nationality: {participant.nationality}"
-                )
-        except Exception as e:
-            print(f"Error getting participants: {str(e)}")
+        # Obtener participantes
+        participants = Participant.objects.filter(booking=booking).order_by('id')
+        participants_list = list(participants)  # Convertir a lista para reutilizar lógica
 
-        participants_text = "\n".join(participants_info) if participants_info else "No participant details"
+        # Construir tabla HTML para detalles de participantes (cliente)
+        if participants_list:
+            participants_table = """
+            <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
+              <thead style="background-color: #f2f2f2;">
+                <tr>
+                  <th>Participant</th>
+                  <th>Age</th>
+                  <th>Nationality</th>
+                </tr>
+              </thead>
+              <tbody>
+            """
+            for i, p in enumerate(participants_list, 1):
+                age = getattr(p, 'age', 'N/A')
+                nationality = getattr(p, 'nationality', 'N/A')
+                participants_table += f"""
+                <tr>
+                  <td style="text-align: center;">{i}</td>
+                  <td style="text-align: center;">{age}</td>
+                  <td style="text-align: center;">{nationality}</td>
+                </tr>
+                """
+            participants_table += """
+              </tbody>
+            </table>
+            """
+        else:
+            participants_table = "<p>No participant details provided.</p>"
 
+        # Get provider contact details if available
+        provider_contact = ""
+        if booking.safari.provider and hasattr(booking.safari.provider, 'email'):
+            provider_contact = f"""
+            <p><strong>Provider Contact Details:</strong></p>
+            <p>Name: {getattr(booking.safari.provider, 'name', 'N/A')}<br>
+               Email: {booking.safari.provider.email}<br>
+               Phone: {getattr(booking.safari.provider, 'phone', 'N/A')}</p>
+            """
+
+        # Email para el cliente (HTML) con toda la información
         client_body = f"""
         <html>
           <body>
             <p>Dear {booking.client_name},</p>
             <p>Your booking has been confirmed:</p>
             <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
-            <pre>
-Date:          {booking.date.strftime("%d-%m-%Y")}
-Participants:  {booking.number_of_people}
-Total Price:   {booking.safari.client_price * booking.number_of_people:.2f}
+            <pre style="font-family: monospace; font-size: 14px;">
+Selected Date:           {booking.date.strftime("%d-%m-%Y")}
+Price per Person:        {booking.safari.client_price:.2f}
+Number of Participants:  {booking.number_of_people}
+_________________________________________
+Amount to Be Paid:       {(booking.safari.client_price * booking.number_of_people):.2f}
             </pre>
-            <p>Participants Details:</p>
-            <pre>{participants_text}</pre>
-            <p>Your invoice is attached.</p>
+            <p><strong>Participants Details:</strong></p>
+            {participants_table}
+            {provider_contact}
+            <p>Your invoice is attached to this email.</p>
+            <p>If you have any questions, please don't hesitate to contact the provider directly or reply to this email.</p>
             <p>Best regards,<br>TourSafariAfrica Team</p>
           </body>
         </html>
@@ -195,17 +285,54 @@ Total Price:   {booking.safari.client_price * booking.number_of_people:.2f}
 
             # Email para proveedor
             if booking.safari.provider and hasattr(booking.safari.provider, 'email'):
+                participants_table_provider = """
+                <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
+                  <thead style="background-color: #f2f2f2;">
+                    <tr>
+                      <th>Participant</th>
+                      <th>Age</th>
+                      <th>Nationality</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                """
+                for i, p in enumerate(participants_list, 1):
+                    age = getattr(p, 'age', 'N/A')
+                    nationality = getattr(p, 'nationality', 'N/A')
+                    participants_table_provider += f"""
+                    <tr>
+                      <td style="text-align: center;">{i}</td>
+                      <td style="text-align: center;">{age}</td>
+                      <td style="text-align: center;">{nationality}</td>
+                    </tr>
+                    """
+                participants_table_provider += """
+                  </tbody>
+                </table>
+                """
+
                 provider_body = f"""
                 <html>
                   <body>
-                    <p>Booking confirmed:</p>
+                    <p>Hello {booking.safari.provider.name if hasattr(booking.safari.provider, 'name') else 'Provider'},</p>
+                    <p>The following booking has been <strong>confirmed</strong>:</p>
                     <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
-                    <pre>
-Date:          {booking.date.strftime("%d-%m-%Y")}
-Participants:  {booking.number_of_people}
-Amount:        {booking.safari.provider_price * booking.number_of_people:.2f}
+                    <pre style="font-family: monospace;">
+Date:                        {booking.date.strftime("%d-%m-%Y")}
+Price per Person:            {booking.safari.provider_price:.2f}
+Number of Participants:      {booking.number_of_people}
+_________________________________________
+Amount to Be Paid to You:    {(booking.safari.provider_price * booking.number_of_people):.2f}
                     </pre>
+                    <p><b>Client Details:</b></p>
+                    <p>Name: {booking.client_name}<br>
+                       Email: {booking.client_email}<br>
+                       Phone: {booking.client_phone}</p>
+                    <p><b>Participants Details:</b></p>
+                    {participants_table_provider}
                     <p>Your invoice is attached.</p>
+                    <p>Best regards,<br>
+                    The TourSafariAfrica Team</p>
                   </body>
                 </html>
                 """
