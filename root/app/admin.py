@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from django.utils import timezone
 from datetime import timedelta
 from django.utils.html import format_html
@@ -63,6 +64,23 @@ class DateRangeFilter(admin.SimpleListFilter):
             return queryset.filter(date__range=[today, next_year])
         return queryset
 
+# Formulario personalizado para Participant
+class ParticipantForm(forms.ModelForm):
+    class Meta:
+        model = Participant
+        fields = ['nationality', 'age']
+        widgets = {
+            'age': forms.NumberInput(attrs={'step': '1'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['age'].widget.attrs.update({
+            'type': 'number',
+            'inputmode': 'numeric',  # Para teclado numérico en móviles
+            'pattern': '[0-9]*',     # Patrón para validación
+        })
+
 # Inlines
 class SafariImageInline(admin.TabularInline):
     model = SafariImage
@@ -75,6 +93,7 @@ class SafariItineraryItemInline(admin.TabularInline):
 
 class ParticipantInline(admin.TabularInline):
     model = Participant
+    form = ParticipantForm  # Usamos el formulario personalizado
     extra = 1
     min_num = 1
     fields = ('nationality', 'age')
@@ -91,6 +110,7 @@ class SafariAdmin(admin.ModelAdmin):
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = (
+        'booking_number',
         'activity_date',
         'safari_name',
         'booking_date',
@@ -113,7 +133,7 @@ class BookingAdmin(admin.ModelAdmin):
         'confirmed_by_provider',
         'payment_status',
     )
-    search_fields = ('client_name', 'client_email', 'client_phone')
+    search_fields = ('booking_number', 'client_name', 'client_email', 'client_phone')
     list_per_page = 25
     list_select_related = ('safari', 'safari__provider')
     inlines = [ParticipantInline]
