@@ -24,7 +24,7 @@ def send_booking_request_email(booking, request, participants_data=None):
     try:
         sender = SENDER_EMAIL
         recipient = booking.client_email
-        subject = f"{booking.safari.name} – Booking Request – {booking.date.strftime('%d.%m.%Y')}"
+        subject = f"Booking Request {booking.booking_number} – {booking.safari.name} – {booking.date.strftime('%d.%m.%Y')}"
 
         # Procesar información de participantes
         participants_info = []
@@ -194,7 +194,7 @@ Amount to Be Paid to You:  {booking.safari.provider_price * booking.number_of_pe
 def send_booking_confirmation_emails(booking, request):
     try:
         sender = SENDER_EMAIL
-        subject = f"{booking.safari.name} – Booking Confirmed – {booking.date.strftime('%d.%m.%Y')}"
+        subject = f"Booking Confirmation {booking.booking_number} – {booking.safari.name} – {booking.date.strftime('%d.%m.%Y')}"
 
         # Obtener participantes
         participants = Participant.objects.filter(booking=booking).order_by('id')
@@ -358,7 +358,7 @@ Amount to Be Paid to You:    {(booking.safari.provider_price * booking.number_of
 def send_booking_cancellation_emails(booking):
     try:
         sender = SENDER_EMAIL
-        subject = f"{booking.safari.name} – Booking Canceled – {booking.date.strftime('%d.%m.%Y')}"
+        subject = f"Booking Cancellation {booking.booking_number} – {booking.safari.name} – {booking.date.strftime('%d.%m.%Y')}"
 
         with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
             server.starttls()

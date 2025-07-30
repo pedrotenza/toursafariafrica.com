@@ -1,6 +1,13 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+import string
+import random
+
+
+def generate_booking_number(length=7):
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(chars, k=length))
 
 
 class Region(models.Model):
@@ -107,6 +114,7 @@ class Booking(models.Model):
         ('canceled', 'Canceled'),
     ]
 
+    booking_number = models.CharField(max_length=10, unique=True, blank=True, null=True)
     safari = models.ForeignKey(
         Safari,
         on_delete=models.CASCADE,
@@ -164,6 +172,12 @@ class Booking(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        if not self.booking_number:
+            while True:
+                code = generate_booking_number()
+                if not Booking.objects.filter(booking_number=code).exists():
+                    self.booking_number = code
+                    break
         if self.safari and self.number_of_people:
             self.payment_amount = self.safari.client_price * self.number_of_people
         super().save(*args, **kwargs)
