@@ -87,6 +87,7 @@ def send_booking_request_email(booking, request, participants_data=None):
             <p>Dear {booking.client_name},</p>
             <p>Thank you for your booking request:</p>
             <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
+            <p>Booking Number: <strong>{booking.booking_number}</strong></p>
             <pre style="font-family: monospace; font-size: 14px;">
         Selected Date:           {booking.date.strftime("%d-%m-%Y")}
         Price per Person:        {booking.safari.client_price:.2f}
@@ -157,6 +158,7 @@ def send_booking_request_email(booking, request, participants_data=None):
                     <p>Hello {booking.safari.provider.name if hasattr(booking.safari.provider, 'name') else 'Simon'},</p>
                     <p>A new booking request has been made for the Activity:</p>
                     <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
+                    <p>Booking Number: <strong>{booking.booking_number}</strong></p>
                     <pre>
 Selected Date:             {booking.date.strftime("%d-%m-%Y")}
 Price per Person:          {booking.safari.provider_price:.2f}
@@ -247,6 +249,7 @@ def send_booking_confirmation_emails(booking, request):
             <p>Dear {booking.client_name},</p>
             <p>Your booking has been confirmed:</p>
             <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
+            <p>Booking Number: <strong>{booking.booking_number}</strong></p>
             <pre style="font-family: monospace; font-size: 14px;">
 Selected Date:           {booking.date.strftime("%d-%m-%Y")}
 Price per Person:        {booking.safari.client_price:.2f}
@@ -317,6 +320,7 @@ Amount to Be Paid:       {(booking.safari.client_price * booking.number_of_peopl
                     <p>Hello {booking.safari.provider.name if hasattr(booking.safari.provider, 'name') else 'Provider'},</p>
                     <p>The following booking has been <strong>confirmed</strong>:</p>
                     <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
+                    <p>Booking Number: <strong>{booking.booking_number}</strong></p>
                     <pre style="font-family: monospace;">
 Date:                        {booking.date.strftime("%d-%m-%Y")}
 Price per Person:            {booking.safari.provider_price:.2f}
