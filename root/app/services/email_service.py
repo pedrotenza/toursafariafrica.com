@@ -239,7 +239,7 @@ def send_booking_confirmation_emails(booking, request):
             <p><strong>Provider Contact Details:</strong></p>
             <p>Name: {getattr(booking.safari.provider, 'name', 'N/A')}<br>
                Email: {booking.safari.provider.email}<br>
-               Phone: {getattr(booking.safari.provider, 'phone', 'N/A')}</p>
+               Phone: {booking.safari.provider.whatsapp_number if booking.safari.provider.whatsapp_number else 'N/A'}</p>
             """
 
         # Email para el cliente (HTML) con toda la información

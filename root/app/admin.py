@@ -64,6 +64,22 @@ class DateRangeFilter(admin.SimpleListFilter):
             return queryset.filter(date__range=[today, next_year])
         return queryset
 
+# Formulario personalizado para Booking
+class BookingForm(forms.ModelForm):
+    class Meta:
+        model = Booking
+        fields = '__all__'
+        widgets = {
+            'client_phone_prefix': forms.TextInput(attrs={
+                'placeholder': '+34',
+                'style': 'width: 80px;'
+            }),
+            'client_phone_number': forms.TextInput(attrs={
+                'placeholder': '612345678',
+                'style': 'width: 150px;'
+            }),
+        }
+
 # Formulario personalizado para Participant
 class ParticipantForm(forms.ModelForm):
     class Meta:
@@ -77,8 +93,8 @@ class ParticipantForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['age'].widget.attrs.update({
             'type': 'number',
-            'inputmode': 'numeric',  # Para teclado numérico en móviles
-            'pattern': '[0-9]*',     # Patrón para validación
+            'inputmode': 'numeric',
+            'pattern': '[0-9]*',
         })
 
 # Inlines
@@ -93,7 +109,7 @@ class SafariItineraryItemInline(admin.TabularInline):
 
 class ParticipantInline(admin.TabularInline):
     model = Participant
-    form = ParticipantForm  # Usamos el formulario personalizado
+    form = ParticipantForm
     extra = 1
     min_num = 1
     fields = ('nationality', 'age')
@@ -109,6 +125,7 @@ class SafariAdmin(admin.ModelAdmin):
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
+    form = BookingForm
     list_display = (
         'booking_number',
         'activity_date',
@@ -126,21 +143,43 @@ class BookingAdmin(admin.ModelAdmin):
         'client_unit_price',
         'client_name',
         'client_email',
-        'client_phone',
+        'formatted_client_phone',
     )
     list_filter = (
         DateRangeFilter,
         'confirmed_by_provider',
         'payment_status',
     )
-    search_fields = ('booking_number', 'client_name', 'client_email', 'client_phone')
+    search_fields = (
+        'booking_number',
+        'client_name',
+        'client_email',
+        'client_phone_prefix',
+        'client_phone_number'
+    )
     list_per_page = 25
     list_select_related = ('safari', 'safari__provider')
     inlines = [ParticipantInline]
-
-    # Custom templates
-    change_form_template = 'admin/app/booking/change_form.html'
-    change_list_template = 'admin/app/booking/change_list.html'
+    
+    fieldsets = (
+        (None, {
+            'fields': (
+                'safari',
+                'date',
+                'number_of_people',
+                ('client_name', 'client_email'),
+                ('client_phone_prefix', 'client_phone_number'),
+                'payment_status',
+                'payment_amount',
+                'payment_method',
+                'transaction_id'
+            )
+        }),
+        ('Provider Confirmation', {
+            'classes': ('collapse',),
+            'fields': ('confirmed_by_provider', 'provider_response_date'),
+        }),
+    )
 
     def activity_date(self, obj):
         return obj.date.strftime('%d/%m/%Y') if obj.date else '—'
@@ -230,9 +269,12 @@ class BookingAdmin(admin.ModelAdmin):
         return obj.client_email if obj.client_email else '—'
     client_email.short_description = 'Email'
 
-    def client_phone(self, obj):
-        return obj.client_phone if obj.client_phone else '—'
-    client_phone.short_description = 'Phone'
+    def formatted_client_phone(self, obj):
+        if obj.client_phone_prefix and obj.client_phone_number:
+            return f"{obj.client_phone_prefix} {obj.client_phone_number}"
+        return "—"
+    formatted_client_phone.short_description = 'Phone'
+    formatted_client_phone.admin_order_field = 'client_phone_number'
 
     class Media:
         css = {

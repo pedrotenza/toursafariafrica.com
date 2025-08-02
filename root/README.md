@@ -11,10 +11,12 @@ python manage.py runserver
 python manage.py makemigrations
 python manage.py migrate
 
+http://localhost:8000/admin/
+http://localhost:8000
 
 python manage.py runserver
 
-http://localhost:8000/admin
+
 http://localhost:8000
 
 
@@ -33,7 +35,7 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m "Add participant age and nationality to provider booking request email"
+git commit -m "Include booking number in email body"
 
 git push
 
