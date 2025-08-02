@@ -13,7 +13,10 @@ def create_booking(post_data, safari, request):
     try:
         name = post_data['name']
         email = post_data['email']
+        country_code = post_data.get('country_code', '')  # Obtener prefijo
         phone = post_data.get('phone', '')
+        full_phone = f"{country_code}{phone}".strip()  # Combinar prefijo + teléfono
+        
         date_str = post_data['date']
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
         number_of_people = int(post_data.get('number_of_people', 1))
@@ -23,12 +26,12 @@ def create_booking(post_data, safari, request):
         if safari.max_people and number_of_people > safari.max_people:
             return None, f"Maximum number of people is {safari.max_people}."
 
-        # Crear la reserva
+        # Crear la reserva con el teléfono completo
         booking = Booking.objects.create(
             safari=safari,
             client_name=name,
             client_email=email,
-            client_phone=phone,
+            client_phone=full_phone,
             date=date,
             number_of_people=number_of_people,
             payment_status='pending',
