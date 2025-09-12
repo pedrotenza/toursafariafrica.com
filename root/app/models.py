@@ -125,7 +125,30 @@ class Booking(models.Model):
     booking_datetime = models.DateTimeField(auto_now_add=True)
     client_name = models.CharField(max_length=100)
     client_email = models.EmailField()
-    client_phone = models.CharField(max_length=20)
+    client_phone_prefix = models.CharField(max_length=5, blank=True, null=True)
+    client_phone_number = models.CharField(max_length=20, blank=True, null=True)
+
+    @property
+    def client_phone(self):
+        """
+        Returns the full phone number including the prefix.
+        - Removes leading 0 from the number if present.
+        - Ensures the prefix starts with '+' if it is numeric.
+        """
+        if not self.client_phone_number:
+            return "N/A"
+
+        number = self.client_phone_number.lstrip("0")
+        prefix = (self.client_phone_prefix or "").strip()
+
+        # Add '+' if the prefix is numeric and doesn't start with '+'
+        if prefix and not prefix.startswith("+") and prefix.replace("+", "").isdigit():
+            prefix = f"+{prefix.lstrip('+')}"
+
+        return f"{prefix} {number}".strip() if prefix else number
+
+
+
 
     confirmed_by_provider = models.BooleanField(default=False)
     provider_response_date = models.DateTimeField(null=True, blank=True)

@@ -8,7 +8,17 @@ from dotenv import load_dotenv
 from django.urls import reverse
 from ..models import Participant  # Importación relativa corregida
 
-load_dotenv()
+
+
+from pathlib import Path
+from dotenv import load_dotenv
+
+# .env está un nivel por encima de manage.py
+env_path = Path(__file__).resolve().parent.parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
+
+
 
 SMTP_USER = os.getenv('BREVO_SMTP_USER')
 SMTP_PASSWORD = os.getenv('BREVO_SMTP_PASSWORD')
@@ -255,7 +265,7 @@ Selected Date:           {booking.date.strftime("%d-%m-%Y")}
 Price per Person:        {booking.safari.client_price:.2f}
 Number of Participants:  {booking.number_of_people}
 _________________________________________
-Amount to Be Paid:       {(booking.safari.client_price * booking.number_of_people):.2f}
+Amount Paid:             {(booking.safari.client_price * booking.number_of_people):.2f}
             </pre>
             <p><strong>Participants Details:</strong></p>
             {participants_table}
@@ -326,7 +336,7 @@ Date:                        {booking.date.strftime("%d-%m-%Y")}
 Price per Person:            {booking.safari.provider_price:.2f}
 Number of Participants:      {booking.number_of_people}
 _________________________________________
-Amount to Be Paid to You:    {(booking.safari.provider_price * booking.number_of_people):.2f}
+Amount paid to You:          {(booking.safari.provider_price * booking.number_of_people):.2f}
                     </pre>
                     <p><b>Client Details:</b></p>
                     <p>Name: {booking.client_name}<br>

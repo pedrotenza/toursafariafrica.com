@@ -90,10 +90,12 @@
       </div>
 
       <div>
-        <label for="id_country_code">Phone:</label>
+        <label for="id_client_phone_prefix">Phone:</label>
         <div style="display: flex; gap: 10px; margin-top: 8px;">
-          <select id="id_country_code" name="country_code" required style="flex: 0 0 120px; padding: 8px; border: 2px solid #4CAF50; border-radius: 10px; background-color: #eaffea; color: #333;"></select>
-          <input type="tel" id="id_phone" name="phone" placeholder="712345678" required style="flex: 1; padding: 8px; border: 2px solid #4CAF50; border-radius: 10px; background-color: #eaffea; color: #333;">
+          <!-- CAMBIO IMPORTANTE: name="client_phone_prefix" -->
+          <select id="id_client_phone_prefix" name="client_phone_prefix" required style="flex: 0 0 120px; padding: 8px; border: 2px solid #4CAF50; border-radius: 10px; background-color: #eaffea; color: #333;"></select>
+          <!-- CAMBIO IMPORTANTE: name="client_phone_number" -->
+          <input type="tel" id="id_client_phone_number" name="client_phone_number" placeholder="712345678" required style="flex: 1; padding: 8px; border: 2px solid #4CAF50; border-radius: 10px; background-color: #eaffea; color: #333;">
         </div>
       </div>
     </div>
@@ -128,7 +130,8 @@
 <script src="{% static 'js/country_codes.js' %}"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const countryCodeSelect = document.getElementById("id_country_code");
+    // CAMBIO: Actualizar el ID del select
+    const countryCodeSelect = document.getElementById("id_client_phone_prefix");
     const nationalityContainer = document.getElementById("participants-fields");
 
     function fillCountrySelect(selectElement, includeEmpty = true) {
