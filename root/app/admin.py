@@ -3,6 +3,8 @@ from django import forms
 from django.utils import timezone
 from datetime import timedelta
 from django.utils.html import format_html
+from django.db.models import Value
+from django.db.models.functions import Concat
 from .models import (
     Safari,
     Booking,
@@ -143,7 +145,7 @@ class BookingAdmin(admin.ModelAdmin):
         'client_unit_price',
         'client_name',
         'client_email',
-        "client_phone",
+        'formatted_client_phone',
     )
     list_filter = (
         DateRangeFilter,
@@ -154,8 +156,8 @@ class BookingAdmin(admin.ModelAdmin):
         'booking_number',
         'client_name',
         'client_email',
-        'client_phone_prefix',
-        'client_phone_number'
+        'safari__name',  
+        'safari__provider__name',
     )
     list_per_page = 25
     list_select_related = ('safari', 'safari__provider')
@@ -232,14 +234,14 @@ class BookingAdmin(admin.ModelAdmin):
         if obj.safari and obj.safari.provider_price:
             return f"{obj.safari.provider_price:.2f}"
         return "—"
-    price.short_description = 'Price'
+    price.short_description = 'Pro Price pp'
 
     def provider_earnings(self, obj):
         if obj.safari and obj.safari.provider_price:
             amount = obj.safari.provider_price * obj.number_of_people
             return format_html('<span style="color: black;">{}</span>', f"{amount:.2f}")
         return "—"
-    provider_earnings.short_description = 'Prov Earns'
+    provider_earnings.short_description = 'Pro Price tot'
 
     def your_profit(self, obj):
         if obj.safari and obj.safari.provider_price and obj.payment_amount:
@@ -253,13 +255,13 @@ class BookingAdmin(admin.ModelAdmin):
         if obj.payment_amount: 
             return format_html('<span style="color: black;">{}</span>', f"{obj.payment_amount:.2f}")
         return "—"
-    client_payment.short_description = 'Client Pay'
+    client_payment.short_description = 'Client Price tot'
 
     def client_unit_price(self, obj):
         if obj.safari and obj.safari.client_price:
             return f"{obj.safari.client_price:.2f}"
         return "—"
-    client_unit_price.short_description = 'Unit Price'
+    client_unit_price.short_description = 'Client Price pp'
 
     def client_name(self, obj):
         return obj.client_name if obj.client_name else '—'
@@ -275,6 +277,17 @@ class BookingAdmin(admin.ModelAdmin):
         return "—"
     formatted_client_phone.short_description = 'Phone'
     formatted_client_phone.admin_order_field = 'client_phone_number'
+
+    # Sobrescribimos búsqueda para incluir teléfono completo
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+        
+        if search_term:
+            queryset |= self.model.objects.annotate(
+                full_phone=Concat('client_phone_prefix', Value(' '), 'client_phone_number')
+            ).filter(full_phone__icontains=search_term)
+        
+        return queryset, use_distinct
 
     class Media:
         css = {
