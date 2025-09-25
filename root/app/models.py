@@ -51,8 +51,7 @@ class Safari(models.Model):
         Provider,
         on_delete=models.CASCADE,
         related_name='safaris',
-        null=True,
-        blank=True
+
     )
     min_people = models.PositiveIntegerField(default=1)
     max_people = models.PositiveIntegerField(default=10)
