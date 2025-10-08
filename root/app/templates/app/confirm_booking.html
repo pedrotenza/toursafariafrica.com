@@ -97,18 +97,6 @@
             padding: 4px 8px;
             font-size: 0.85em;
         }
-        /* ESTILO NUEVO PARA MOSTRAR LOS SALTOS DE LÍNEA */
-        .alert pre {
-            white-space: pre-line;
-            background: transparent;
-            border: none;
-            padding: 0;
-            margin: 0;
-            font-family: inherit;
-            font-size: inherit;
-            color: inherit;
-            line-height: 1.5;
-        }
     </style>
 </head>
 <body>
@@ -167,7 +155,7 @@
                     {% endif %}
                 </div>
 
-                <!-- Sección de precios -->
+                <!-- Sección de precios - TEXTO Y CIFRAS PEGADOS -->
                 <div class="price-section">
                     <div class="price-header">💰 Price Details</div>
                     
@@ -190,7 +178,7 @@
                     
                     <div class="price-total d-flex justify-content-between align-items-center">
                         <span class="total-label">💰 Amount to Be Paid:</span>
-                        <span class="total-value">{{ total_provider_amount|floatformat:2 }} €</span>
+                        <span class="total-value">{% widthratio booking.safari.provider_price 1 booking.number_of_people %} €</span>
                     </div>
                 </div>
 
@@ -210,7 +198,7 @@
                     </div>
                 </div>
                 {% else %}
-                <!-- Botones de acción -->
+                <!-- Botones de acción - Solo el botón de confirmar -->
                 <div class="row mt-4">
                     <div class="col-md-12 mb-2">
                         <form method="post" action="">
@@ -224,12 +212,12 @@
                 </div>
                 {% endif %}
 
-                <!-- Mensajes - SECCIÓN MODIFICADA -->
+                <!-- Mensajes -->
                 {% if messages %}
                 <div class="mt-4">
                     {% for message in messages %}
                     <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
-                        <pre>{{ message }}</pre>
+                        {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     {% endfor %}

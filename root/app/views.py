@@ -38,7 +38,7 @@ def safari_detail(request, safari_id):
         client_email = booking.client_email if booking else "the client"
         messages.success(
             request,
-            "Booking request created successfully! Your reservation is pending confirmation by the provider.\n"
+            f"Booking request number {booking.booking_number} created successfully! Your reservation is pending confirmation by the provider.\n"
             "\n"
             "No payment will be processed until the provider confirms your booking.\n"
             "\n"
