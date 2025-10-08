@@ -3,12 +3,21 @@
 {% block content %}
 <h1>{{ safari.name }}</h1>
 
+<!-- Messages de réservation -->
+{% if messages %}
+  <div style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: #e6ffe6; color: #2a7a2a;">
+    {% for message in messages %}
+      <p style="margin: 5px 0; white-space: pre-line;">{{ message }}</p>
+    {% endfor %}
+  </div>
+{% endif %}
+
 <!-- Imágenes -->
 <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
   {% for img in safari.images.all %}
     <img src="{{ img.image.url }}" alt="Imagen {{ safari.name }}" width="300" style="border-radius: 8px;">
   {% empty %}
-    <p>No hay imágenes disponibles.</p>
+    <p>No images available.</p>
   {% endfor %}
 </div>
 
@@ -43,24 +52,20 @@
   {% endif %}
 </section>
 
-<!-- Descripción -->
+<!-- Description -->
 <section style="margin-bottom: 20px;">
   <h2>Description</h2>
   <p>{{ safari.description }}</p>
 </section>
 
-<!-- Formulario de reserva -->
+<!-- Formulaire de réservation -->
 <section>
   <h2>Book This Activity</h2>
-
-  {% if error_message %}
-    <p style="color: red; font-weight: bold;">{{ error_message }}</p>
-  {% endif %}
 
   <form method="POST" style="max-width: 700px;" id="booking-form">
     {% csrf_token %}
 
-    <!-- Número de participantes -->
+    <!-- Nombre de participants -->
     <div style="margin-bottom: 20px;">
       <label for="id_number_of_people">Number of Participants:</label>
       <input type="number"
@@ -75,7 +80,7 @@
       <small style="color: gray;">Allowed: {{ safari.min_people }} to {{ safari.max_people }} people</small>
     </div>
 
-    <!-- Contacto principal -->
+    <!-- Contact principal -->
     <div style="margin-bottom: 25px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
       <h3>Main Contact Information</h3>
 
@@ -92,15 +97,13 @@
       <div>
         <label for="id_client_phone_prefix">Phone:</label>
         <div style="display: flex; gap: 10px; margin-top: 8px;">
-          <!-- CAMBIO IMPORTANTE: name="client_phone_prefix" -->
           <select id="id_client_phone_prefix" name="client_phone_prefix" required style="flex: 0 0 120px; padding: 8px; border: 2px solid #4CAF50; border-radius: 10px; background-color: #eaffea; color: #333;"></select>
-          <!-- CAMBIO IMPORTANTE: name="client_phone_number" -->
           <input type="tel" id="id_client_phone_number" name="client_phone_number" placeholder="712345678" required style="flex: 1; padding: 8px; border: 2px solid #4CAF50; border-radius: 10px; background-color: #eaffea; color: #333;">
         </div>
       </div>
     </div>
 
-    <!-- Participantes -->
+    <!-- Participants -->
     <div style="margin-bottom: 25px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
       <h3>Participants Information</h3>
 
@@ -111,11 +114,11 @@
       </div>
 
       <div id="participants-fields">
-        <!-- Campos generados por JS -->
+        <!-- Champs générés par JS -->
       </div>
     </div>
 
-    <!-- Fecha -->
+    <!-- Date -->
     <div style="margin-bottom: 20px;">
       <label for="id_date">Date:</label>
       <input type="date" id="id_date" name="date" required style="width: 100%; padding: 8px; border: 2px solid #4CAF50; border-radius: 10px; background-color: #eaffea; color: #333; margin-top: 8px;">
@@ -130,7 +133,6 @@
 <script src="{% static 'js/country_codes.js' %}"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // CAMBIO: Actualizar el ID del select
     const countryCodeSelect = document.getElementById("id_client_phone_prefix");
     const nationalityContainer = document.getElementById("participants-fields");
 
@@ -146,7 +148,7 @@
         const option = document.createElement("option");
         option.value = country.code;
         option.textContent = `${country.name} (${country.code})`;
-        countryCodeSelect.appendChild(option);
+        selectElement.appendChild(option);
       });
     }
 

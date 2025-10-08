@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Safari Booking</title>
+    <title>{% block title %}Safari Booking{% endblock %}</title>
 
     {% load static %}
     <link rel="stylesheet" href="{% static 'app/css/styles.css' %}"> 
@@ -62,7 +62,7 @@
             text-decoration: underline;
         }
 
-        /* --- Agregado: Estilos para las tarjetas --- */
+        /* --- Estilos para las tarjetas --- */
         .cards {
             display: flex;
             gap: 20px;
@@ -97,10 +97,10 @@
 </head>
 <body>
     <div class="main-content">
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </div>
 
+    {% block sidebar %}
     <div class="safari-menu">
         <h3><a href="{% url 'home' %}">🏠 Home</a></h3>
         {% for region in regions %}
@@ -127,6 +127,6 @@
             <p>No regions available</p>
         {% endfor %}
     </div>
+    {% endblock %}
 </body>
 </html>
-

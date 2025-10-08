@@ -6,9 +6,7 @@ from .invoice_service import generate_invoice_pdf
 import os
 from dotenv import load_dotenv
 from django.urls import reverse
-from ..models import Participant  # Importación relativa corregida
-
-
+from ..models import Participant
 
 from pathlib import Path
 from dotenv import load_dotenv
@@ -17,24 +15,22 @@ from dotenv import load_dotenv
 env_path = Path(__file__).resolve().parent.parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
-
-
-
 SMTP_USER = os.getenv('BREVO_SMTP_USER')
 SMTP_PASSWORD = os.getenv('BREVO_SMTP_PASSWORD')
 SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 
-
 def request_build_url(request, path_name, booking_id):
     relative_url = reverse(path_name, args=[booking_id])
     return request.build_absolute_uri(relative_url)
-
 
 def send_booking_request_email(booking, request, participants_data=None):
     try:
         sender = SENDER_EMAIL
         recipient = booking.client_email
         subject = f"Booking Request {booking.booking_number} – {booking.safari.name} – {booking.date.strftime('%d.%m.%Y')}"
+
+        print(f"📧 Starting email process for booking {booking.booking_number}")
+        print(f"📨 To client: {recipient}")
 
         # Procesar información de participantes
         participants_info = []
@@ -54,7 +50,7 @@ def send_booking_request_email(booking, request, participants_data=None):
                         f"• Participant {idx}: Age {participant.age} | Nationality: {participant.nationality}"
                     )
             except Exception as e:
-                print(f"Error getting participants: {str(e)}")
+                print(f"❌ Error getting participants: {str(e)}")
 
         # Construir tabla HTML para detalles de participantes (cliente)
         if participants_list:
@@ -118,101 +114,131 @@ def send_booking_request_email(booking, request, participants_data=None):
         message["From"] = sender
         message["To"] = recipient
 
-        with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.sendmail(sender, recipient, message.as_string())
-            print(f"Booking request email sent to client")
+        # Enviar email al cliente
+        try:
+            with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
+                server.starttls()
+                server.login(SMTP_USER, SMTP_PASSWORD)
+                server.sendmail(sender, recipient, message.as_string())
+                print(f"✅ Booking request email sent to client: {recipient}")
+        except Exception as client_email_error:
+            print(f"❌ Error sending email to client: {str(client_email_error)}")
+            return  # Si falla el email al cliente, no continuar
 
-            if booking.safari.provider and hasattr(booking.safari.provider, 'email'):
-                confirm_url = request_build_url(request, 'confirm_booking', booking.id)
-                cancel_url = request_build_url(request, 'cancel_booking', booking.id)
+        # Enviar email al proveedor (CONEXIÓN SEPARADA)
+        if booking.safari.provider and hasattr(booking.safari.provider, 'email'):
+            provider_email = booking.safari.provider.email
+            
+            # Validar email del proveedor
+            if not provider_email or provider_email.strip() == "":
+                print("❌ Provider email is empty, skipping provider email")
+                return
+                
+            print(f"📨 To provider: {provider_email}")
 
-                # Construir tabla HTML para detalles de participantes para el provider (igual que para el cliente)
-                if participants_list:
-                    participants_table_provider = """
-                    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
-                      <thead style="background-color: #f2f2f2;">
-                        <tr>
-                          <th>Participant</th>
-                          <th>Age</th>
-                          <th>Nationality</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+            confirm_url = request_build_url(request, 'confirm_booking', booking.id)
+            cancel_url = request_build_url(request, 'cancel_booking', booking.id)
+
+            # Construir tabla HTML para detalles de participantes para el provider
+            if participants_list:
+                participants_table_provider = """
+                <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
+                  <thead style="background-color: #f2f2f2;">
+                    <tr>
+                      <th>Participant</th>
+                      <th>Age</th>
+                      <th>Nationality</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                """
+                for i, p in enumerate(participants_list, 1):
+                    if isinstance(p, dict):
+                        age = p.get('age', 'N/A')
+                        nationality = p.get('nationality', 'N/A')
+                    else:
+                        age = getattr(p, 'age', 'N/A')
+                        nationality = getattr(p, 'nationality', 'N/A')
+                    participants_table_provider += f"""
+                    <tr>
+                      <td style="text-align: center;">{i}</td>
+                      <td style="text-align: center;">{age}</td>
+                      <td style="text-align: center;">{nationality}</td>
+                    </tr>
                     """
-                    for i, p in enumerate(participants_list, 1):
-                        if isinstance(p, dict):
-                            age = p.get('age', 'N/A')
-                            nationality = p.get('nationality', 'N/A')
-                        else:
-                            age = getattr(p, 'age', 'N/A')
-                            nationality = getattr(p, 'nationality', 'N/A')
-                        participants_table_provider += f"""
-                        <tr>
-                          <td style="text-align: center;">{i}</td>
-                          <td style="text-align: center;">{age}</td>
-                          <td style="text-align: center;">{nationality}</td>
-                        </tr>
-                        """
-                    participants_table_provider += """
-                      </tbody>
-                    </table>
-                    """
-                else:
-                    participants_table_provider = "<p>No participant details provided.</p>"
+                participants_table_provider += """
+                  </tbody>
+                </table>
+                """
+            else:
+                participants_table_provider = "<p>No participant details provided.</p>"
 
-                provider_body = f"""
-                <html>
-                  <body>
-                    <p>Hello {booking.safari.provider.name if hasattr(booking.safari.provider, 'name') else 'Simon'},</p>
-                    <p>A new booking request has been made for the Activity:</p>
-                    <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
-                    <p>Booking Number: <strong>{booking.booking_number}</strong></p>
-                    <pre>
+            provider_body = f"""
+            <html>
+              <body>
+                <p>Hello {booking.safari.provider.name if hasattr(booking.safari.provider, 'name') else 'Simon'},</p>
+                <p>A new booking request has been made for the Activity:</p>
+                <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
+                <p>Booking Number: <strong>{booking.booking_number}</strong></p>
+                <pre>
 Selected Date:             {booking.date.strftime("%d-%m-%Y")}
 Price per Person:          {booking.safari.provider_price:.2f}
 Number of Participants:    {booking.number_of_people}
 _________________________________________
 Amount to Be Paid to You:  {booking.safari.provider_price * booking.number_of_people:.2f}
-                    </pre>
-                    <p>Client Details:</p>
-                    <p><b>Name:</b> {booking.client_name}</p>
-                    <p><b>Participants Details:</b></p>
-                    {participants_table_provider}
-                    <p>To <b>CONFIRM</b> the booking, click here:<br>
-                       <a href="{confirm_url}">{confirm_url}</a></p>
-                    <p>To <b>CANCEL</b> the booking, click here:<br>
-                       <a href="{cancel_url}">{cancel_url}</a></p>
-                    <p>Best regards,<br>
-                    The TourSafariAfrica Team</p>
-                  </body>
-                </html>
-                """
+                </pre>
+                <p>Client Details:</p>
+                <p><b>Name:</b> {booking.client_name}</p>
+                <p><b>Participants Details:</b></p>
+                {participants_table_provider}
+                <p>To <b>CONFIRM</b> the booking, click here:<br>
+                   <a href="{confirm_url}">{confirm_url}</a></p>
+                <p>To <b>CANCEL</b> the booking, click here:<br>
+                   <a href="{cancel_url}">{cancel_url}</a></p>
+                <p>Best regards,<br>
+                The TourSafariAfrica Team</p>
+              </body>
+            </html>
+            """
 
-                provider_message = MIMEMultipart()
-                provider_message['Subject'] = subject
-                provider_message['From'] = sender
-                provider_message['To'] = booking.safari.provider.email
-                provider_message.attach(MIMEText(provider_body, "html"))
+            provider_message = MIMEMultipart()
+            provider_message['Subject'] = subject
+            provider_message['From'] = sender
+            provider_message['To'] = provider_email
+            provider_message.attach(MIMEText(provider_body, "html"))
 
-                server.sendmail(sender, booking.safari.provider.email, provider_message.as_string())
-                print(f"Booking request sent to provider")
+            # Enviar email al proveedor con conexión separada
+            try:
+                with smtplib.SMTP("smtp-relay.brevo.com", 587) as server_provider:
+                    server_provider.starttls()
+                    server_provider.login(SMTP_USER, SMTP_PASSWORD)
+                    server_provider.sendmail(sender, provider_email, provider_message.as_string())
+                    print(f"✅ Booking request sent to provider: {provider_email}")
+            except Exception as provider_error:
+                print(f"❌ Error sending email to provider: {str(provider_error)}")
+                # Log detallado del error SMTP
+                import traceback
+                traceback.print_exc()
+        else:
+            print("❌ No provider or provider email found")
 
     except Exception as e:
-        print(f"Error sending emails: {str(e)}")
-
+        print(f"❌ General error in send_booking_request_email: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
 def send_booking_confirmation_emails(booking, request):
     try:
         sender = SENDER_EMAIL
         subject = f"Booking Confirmation {booking.booking_number} – {booking.safari.name} – {booking.date.strftime('%d.%m.%Y')}"
 
+        print(f"📧 Starting confirmation emails for booking {booking.booking_number}")
+
         # Obtener participantes
         participants = Participant.objects.filter(booking=booking).order_by('id')
-        participants_list = list(participants)  # Convertir a lista para reutilizar lógica
+        participants_list = list(participants)
 
-        # Construir tabla HTML para detalles de participantes (cliente)
+        # Construir tabla HTML para detalles de participantes
         if participants_list:
             participants_table = """
             <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
@@ -252,7 +278,7 @@ def send_booking_confirmation_emails(booking, request):
                Phone: {booking.safari.provider.whatsapp_number if booking.safari.provider.whatsapp_number else 'N/A'}</p>
             """
 
-        # Email para el cliente (HTML) con toda la información
+        # Email para el cliente
         client_body = f"""
         <html>
           <body>
@@ -277,167 +303,218 @@ Amount Paid:             {(booking.safari.client_price * booking.number_of_peopl
         </html>
         """
 
-        with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASSWORD)
+        # Email para cliente
+        print(f"📨 Sending confirmation to client: {booking.client_email}")
+        try:
+            with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
+                server.starttls()
+                server.login(SMTP_USER, SMTP_PASSWORD)
 
-            # Email para cliente
-            message_client = MIMEMultipart()
-            message_client["Subject"] = subject
-            message_client["From"] = sender
-            message_client["To"] = booking.client_email
-            message_client.attach(MIMEText(client_body, "html"))
+                message_client = MIMEMultipart()
+                message_client["Subject"] = subject
+                message_client["From"] = sender
+                message_client["To"] = booking.client_email
+                message_client.attach(MIMEText(client_body, "html"))
 
-            invoice_client = generate_invoice_pdf(booking, for_provider=False)
-            part_client = MIMEApplication(invoice_client, Name="Invoice.pdf")
-            part_client['Content-Disposition'] = 'attachment; filename="Invoice.pdf"'
-            message_client.attach(part_client)
+                invoice_client = generate_invoice_pdf(booking, for_provider=False)
+                part_client = MIMEApplication(invoice_client, Name="Invoice.pdf")
+                part_client['Content-Disposition'] = 'attachment; filename="Invoice.pdf"'
+                message_client.attach(part_client)
 
-            server.sendmail(sender, booking.client_email, message_client.as_string())
-            print("Confirmation email sent to client")
+                server.sendmail(sender, booking.client_email, message_client.as_string())
+                print("✅ Confirmation email sent to client")
+        except Exception as client_error:
+            print(f"❌ Error sending confirmation to client: {str(client_error)}")
 
-            # Email para proveedor
-            if booking.safari.provider and hasattr(booking.safari.provider, 'email'):
-                participants_table_provider = """
-                <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
-                  <thead style="background-color: #f2f2f2;">
-                    <tr>
-                      <th>Participant</th>
-                      <th>Age</th>
-                      <th>Nationality</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+        # Email para proveedor (CONEXIÓN SEPARADA)
+        if booking.safari.provider and hasattr(booking.safari.provider, 'email'):
+            provider_email = booking.safari.provider.email
+            
+            if not provider_email or provider_email.strip() == "":
+                print("❌ Provider email is empty, skipping provider confirmation email")
+                return
+                
+            print(f"📨 Sending confirmation to provider: {provider_email}")
+
+            participants_table_provider = """
+            <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; max-width: 600px;">
+              <thead style="background-color: #f2f2f2;">
+                <tr>
+                  <th>Participant</th>
+                  <th>Age</th>
+                  <th>Nationality</th>
+                </tr>
+              </thead>
+              <tbody>
+            """
+            for i, p in enumerate(participants_list, 1):
+                age = getattr(p, 'age', 'N/A')
+                nationality = getattr(p, 'nationality', 'N/A')
+                participants_table_provider += f"""
+                <tr>
+                  <td style="text-align: center;">{i}</td>
+                  <td style="text-align: center;">{age}</td>
+                  <td style="text-align: center;">{nationality}</td>
+                </tr>
                 """
-                for i, p in enumerate(participants_list, 1):
-                    age = getattr(p, 'age', 'N/A')
-                    nationality = getattr(p, 'nationality', 'N/A')
-                    participants_table_provider += f"""
-                    <tr>
-                      <td style="text-align: center;">{i}</td>
-                      <td style="text-align: center;">{age}</td>
-                      <td style="text-align: center;">{nationality}</td>
-                    </tr>
-                    """
-                participants_table_provider += """
-                  </tbody>
-                </table>
-                """
+            participants_table_provider += """
+              </tbody>
+            </table>
+            """
 
-                provider_body = f"""
-                <html>
-                  <body>
-                    <p>Hello {booking.safari.provider.name if hasattr(booking.safari.provider, 'name') else 'Provider'},</p>
-                    <p>The following booking has been <strong>confirmed</strong>:</p>
-                    <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
-                    <p>Booking Number: <strong>{booking.booking_number}</strong></p>
-                    <pre style="font-family: monospace;">
+            provider_body = f"""
+            <html>
+              <body>
+                <p>Hello {booking.safari.provider.name if hasattr(booking.safari.provider, 'name') else 'Provider'},</p>
+                <p>The following booking has been <strong>confirmed</strong>:</p>
+                <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
+                <p>Booking Number: <strong>{booking.booking_number}</strong></p>
+                <pre style="font-family: monospace;">
 Date:                        {booking.date.strftime("%d-%m-%Y")}
 Price per Person:            {booking.safari.provider_price:.2f}
 Number of Participants:      {booking.number_of_people}
 _________________________________________
 Amount paid to You:          {(booking.safari.provider_price * booking.number_of_people):.2f}
-                    </pre>
-                    <p><b>Client Details:</b></p>
-                    <p>Name: {booking.client_name}<br>
-                       Email: {booking.client_email}<br>
-                       Phone: {booking.client_phone}</p>
-                    <p><b>Participants Details:</b></p>
-                    {participants_table_provider}
-                    <p>Your invoice is attached.</p>
-                    <p>Best regards,<br>
-                    The TourSafariAfrica Team</p>
-                  </body>
-                </html>
-                """
+                </pre>
+                <p><b>Client Details:</b></p>
+                <p>Name: {booking.client_name}<br>
+                   Email: {booking.client_email}<br>
+                   Phone: {booking.client_phone}</p>
+                <p><b>Participants Details:</b></p>
+                {participants_table_provider}
+                <p>Your invoice is attached.</p>
+                <p>Best regards,<br>
+                The TourSafariAfrica Team</p>
+              </body>
+            </html>
+            """
 
-                provider_message = MIMEMultipart()
-                provider_message["Subject"] = subject
-                provider_message["From"] = sender
-                provider_message["To"] = booking.safari.provider.email
-                provider_message.attach(MIMEText(provider_body, "html"))
+            try:
+                with smtplib.SMTP("smtp-relay.brevo.com", 587) as server_provider:
+                    server_provider.starttls()
+                    server_provider.login(SMTP_USER, SMTP_PASSWORD)
 
-                invoice_provider = generate_invoice_pdf(booking, for_provider=True)
-                part_provider = MIMEApplication(invoice_provider, Name="Provider_Invoice.pdf")
-                part_provider['Content-Disposition'] = 'attachment; filename="Provider_Invoice.pdf"'
-                provider_message.attach(part_provider)
+                    provider_message = MIMEMultipart()
+                    provider_message["Subject"] = subject
+                    provider_message["From"] = sender
+                    provider_message["To"] = provider_email
+                    provider_message.attach(MIMEText(provider_body, "html"))
 
-                server.sendmail(sender, booking.safari.provider.email, provider_message.as_string())
-                print("Confirmation email sent to provider")
+                    invoice_provider = generate_invoice_pdf(booking, for_provider=True)
+                    part_provider = MIMEApplication(invoice_provider, Name="Provider_Invoice.pdf")
+                    part_provider['Content-Disposition'] = 'attachment; filename="Provider_Invoice.pdf"'
+                    provider_message.attach(part_provider)
+
+                    server_provider.sendmail(sender, provider_email, provider_message.as_string())
+                    print("✅ Confirmation email sent to provider")
+            except Exception as provider_error:
+                print(f"❌ Error sending confirmation to provider: {str(provider_error)}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print("❌ No provider or provider email found for confirmation")
 
     except Exception as e:
-        print(f"Error sending confirmation emails: {str(e)}")
-
+        print(f"❌ General error in send_booking_confirmation_emails: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
 def send_booking_cancellation_emails(booking):
     try:
         sender = SENDER_EMAIL
         subject = f"Booking Cancellation {booking.booking_number} – {booking.safari.name} – {booking.date.strftime('%d.%m.%Y')}"
 
-        with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASSWORD)
+        print(f"📧 Starting cancellation emails for booking {booking.booking_number}")
 
-            # Email para cliente
-            client_body = f"""
-            <html>
-              <body>
-                <p>Dear {booking.client_name},</p>
-                <p>Your booking has been canceled:</p>
-                <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
-                <pre>
-Date:          {booking.date.strftime("%d-%m-%Y")}
-Participants:  {booking.number_of_people}
-                </pre>
-                <p>The cancellation receipt is attached.</p>
-                <p>Best regards,<br>TourSafariAfrica Team</p>
-              </body>
-            </html>
-            """
+        # Email para cliente
+        print(f"📨 Sending cancellation to client: {booking.client_email}")
+        try:
+            with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
+                server.starttls()
+                server.login(SMTP_USER, SMTP_PASSWORD)
 
-            msg_client = MIMEMultipart()
-            msg_client["Subject"] = subject
-            msg_client["From"] = sender
-            msg_client["To"] = booking.client_email
-            msg_client.attach(MIMEText(client_body, "html"))
-
-            invoice_pdf = generate_invoice_pdf(booking, for_provider=False)
-            part_cli = MIMEApplication(invoice_pdf, Name="Cancellation_Receipt.pdf")
-            part_cli["Content-Disposition"] = 'attachment; filename="Cancellation_Receipt.pdf"'
-            msg_client.attach(part_cli)
-
-            server.sendmail(sender, booking.client_email, msg_client.as_string())
-            print("Cancellation email sent to client")
-
-            # Email para proveedor
-            if booking.safari.provider and hasattr(booking.safari.provider, 'email'):
-                provider_body = f"""
+                client_body = f"""
                 <html>
                   <body>
-                    <p>Booking canceled:</p>
+                    <p>Dear {booking.client_name},</p>
+                    <p>Your booking has been canceled:</p>
                     <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
                     <pre>
 Date:          {booking.date.strftime("%d-%m-%Y")}
 Participants:  {booking.number_of_people}
                     </pre>
                     <p>The cancellation receipt is attached.</p>
+                    <p>Best regards,<br>TourSafariAfrica Team</p>
                   </body>
                 </html>
                 """
 
-                msg_prov = MIMEMultipart()
-                msg_prov["Subject"] = subject
-                msg_prov["From"] = sender
-                msg_prov["To"] = booking.safari.provider.email
-                msg_prov.attach(MIMEText(provider_body, "html"))
+                msg_client = MIMEMultipart()
+                msg_client["Subject"] = subject
+                msg_client["From"] = sender
+                msg_client["To"] = booking.client_email
+                msg_client.attach(MIMEText(client_body, "html"))
 
-                invoice_pdf_prov = generate_invoice_pdf(booking, for_provider=True)
-                part_prv = MIMEApplication(invoice_pdf_prov, Name="Provider_Cancellation_Receipt.pdf")
-                part_prv["Content-Disposition"] = 'attachment; filename="Provider_Cancellation_Receipt.pdf"'
-                msg_prov.attach(part_prv)
+                invoice_pdf = generate_invoice_pdf(booking, for_provider=False)
+                part_cli = MIMEApplication(invoice_pdf, Name="Cancellation_Receipt.pdf")
+                part_cli["Content-Disposition"] = 'attachment; filename="Cancellation_Receipt.pdf"'
+                msg_client.attach(part_cli)
 
-                server.sendmail(sender, booking.safari.provider.email, msg_prov.as_string())
-                print("Cancellation email sent to provider")
+                server.sendmail(sender, booking.client_email, msg_client.as_string())
+                print("✅ Cancellation email sent to client")
+        except Exception as client_error:
+            print(f"❌ Error sending cancellation to client: {str(client_error)}")
+
+        # Email para proveedor (CONEXIÓN SEPARADA)
+        if booking.safari.provider and hasattr(booking.safari.provider, 'email'):
+            provider_email = booking.safari.provider.email
+            
+            if not provider_email or provider_email.strip() == "":
+                print("❌ Provider email is empty, skipping provider cancellation email")
+                return
+                
+            print(f"📨 Sending cancellation to provider: {provider_email}")
+
+            provider_body = f"""
+            <html>
+              <body>
+                <p>Booking canceled:</p>
+                <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
+                <pre>
+Date:          {booking.date.strftime("%d-%m-%Y")}
+Participants:  {booking.number_of_people}
+                </pre>
+                <p>The cancellation receipt is attached.</p>
+              </body>
+            </html>
+            """
+
+            try:
+                with smtplib.SMTP("smtp-relay.brevo.com", 587) as server_provider:
+                    server_provider.starttls()
+                    server_provider.login(SMTP_USER, SMTP_PASSWORD)
+
+                    msg_prov = MIMEMultipart()
+                    msg_prov["Subject"] = subject
+                    msg_prov["From"] = sender
+                    msg_prov["To"] = provider_email
+                    msg_prov.attach(MIMEText(provider_body, "html"))
+
+                    invoice_pdf_prov = generate_invoice_pdf(booking, for_provider=True)
+                    part_prv = MIMEApplication(invoice_pdf_prov, Name="Provider_Cancellation_Receipt.pdf")
+                    part_prv["Content-Disposition"] = 'attachment; filename="Provider_Cancellation_Receipt.pdf"'
+                    msg_prov.attach(part_prv)
+
+                    server_provider.sendmail(sender, provider_email, msg_prov.as_string())
+                    print("✅ Cancellation email sent to provider")
+            except Exception as provider_error:
+                print(f"❌ Error sending cancellation to provider: {str(provider_error)}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print("❌ No provider or provider email found for cancellation")
 
     except Exception as e:
-        print(f"Error sending cancellation emails: {str(e)}")
+        print(f"❌ General error in send_booking_cancellation_emails: {str(e)}")
+        import traceback
+        traceback.print_exc()
