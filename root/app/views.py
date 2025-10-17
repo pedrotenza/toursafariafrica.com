@@ -119,14 +119,29 @@ def cancel_booking(request, booking_id):
         html_result = cancel_booking_service(booking_id)
         if "❌ Booking canceled successfully" in html_result:
             messages.success(request, "Reserva cancelada correctamente.")
+            # ✅ CORREGIDO: Redirigir a booking_cancelled en lugar de booking_confirmed
+            return redirect('booking_cancelled', booking_number=booking.booking_number)
         else:
             messages.error(request, "No se pudo cancelar la reserva.")
-        return redirect('booking_confirmed', booking_number=booking.booking_number)
+            return redirect('booking_confirmed', booking_number=booking.booking_number)
 
-    return render(request, 'app/confirm_booking.html', {
+    return render(request, 'app/cancel_booking.html', {
         'booking': booking,
         'participants': participants,
     })
+
+
+def booking_cancelled(request, booking_number):
+    """Nueva vista para mostrar página de cancelación confirmada"""
+    booking = get_object_or_404(Booking, booking_number=booking_number)
+    participants = Participant.objects.filter(booking=booking)
+    
+    context = {
+        'booking': booking,
+        'participants': participants,
+    }
+    
+    return render(request, 'app/booking_cancelled.html', context)
 
 
 class BookingCreateView(CreateView):

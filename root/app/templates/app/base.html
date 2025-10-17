@@ -4,99 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Safari Booking{% endblock %}</title>
-
     {% load static %}
-    <link rel="stylesheet" href="{% static 'app/css/styles.css' %}"> 
-    
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: flex-end;
-            background-color: #f0f0f0;
-        }
-        .safari-menu {
-            width: 30%;
-            min-width: 300px;
-            padding: 20px;
-            background: #f5f5f5;
-            height: 100vh;
-            position: fixed;
-            right: 0;
-            top: 0;
-            overflow-y: auto;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-        }
-        .main-content {
-            width: 70%;
-            padding: 40px;
-            margin-right: 30%;
-            box-sizing: border-box;
-        }
-        h3 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-        strong {
-            color: #2980b9;
-            display: block;
-            margin: 15px 0 5px;
-        }
-        ul {
-            list-style-type: none;
-            padding-left: 15px;
-        }
-        li {
-            margin: 5px 0;
-        }
-        a {
-            color: #16a085;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        a:hover {
-            color: #e74c3c;
-            text-decoration: underline;
-        }
-
-        /* --- Estilos para las tarjetas --- */
-        .cards {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .card {
-            width: 220px;
-            padding: 20px;
-            border-radius: 12px;
-            background: #fff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-            background-color: #f4f4f4;
-        }
-
-        .card h3 {
-            font-size: 18px;
-            color: #333;
-        }
-
-        .card p {
-            font-size: 14px;
-            color: #666;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
 </head>
 <body>
-    <div class="main-content">
+    <header style="background-color: #1a472a; color: white; padding: 1rem; text-align: center; width: 100%; position: fixed; top: 0; left: 0; z-index: 1100; box-sizing: border-box;">
+        <h1 style="margin: 0; font-size: 2rem; letter-spacing: 3px;">TOURSAFARIAFRICA.COM</h1>
+    </header>
+
+    <div class="main-content" style="margin-top: 80px;">
+
         {% block content %}{% endblock %}
     </div>
 

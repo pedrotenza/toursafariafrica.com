@@ -1,33 +1,290 @@
-<style>
-.cards {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safari Adventure</title>
+    <style>
+        /* ===== RESET Y BASE ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-color: #F4EAD5; /* sable clair */
+            line-height: 1.6; 
+            color: #2B2B2B; /* brun foncé lisible */
+            width: 100%; 
+            overflow-x: hidden; 
+        }
 
-.card {
-  width: 220px;
-  padding: 20px;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, background-color 0.3s ease;
-}
+        /* ===== ESTRUCTURA GENERAL ===== */
+        .main-content { 
+            padding: 2rem; 
+            width: 100%; 
+            min-height: 100vh; 
+        }
 
-.card:hover {
-  transform: translateY(-10px);
-  background-color: #fff0e6;
-}
+        .safari-menu { 
+            background: #EDE3C6; /* beige sable */
+            overflow-y: auto; 
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1); 
+            z-index: 1000; 
+            border-left: 5px solid #6B8E23; /* vert olive */
+        }
 
-.card h3 {
-  font-size: 18px;
-  color: #333;
-}
+        /* ===== DISEÑO RESPONSIVO ===== */
+        @media (min-width: 1025px) {
+            body { display: flex; justify-content: flex-end; }
+            .safari-menu { 
+                width: 22%; 
+                min-width: 240px; 
+                padding: 1.5rem; 
+                height:  calc(100vh - 100px);
+                position: fixed; 
+                right: 20px; 
+                top: 100px;
+                border-radius: 12px 0 0 12px;
+            }
+            .main-content { 
+                width: 78%; 
+                margin-right: calc(28% + 20px); 
+                padding: 3rem; 
+            }
+        }
 
-.card p {
-  font-size: 14px;
-  color: #666;
-}
-</style>
+        @media (max-width: 1024px) and (min-width: 769px) {
+            body { display: flex; flex-direction: column; }
+            .safari-menu { 
+                position: relative; width: 100%; padding: 1.2rem; 
+                box-shadow: none; border-top: 4px solid #6B8E23; order: 2; 
+                border-left: none; border-radius: 0;
+            }
+            .main-content { order: 1; padding: 2rem; width: 100%; }
+            .safari-menu strong { display: inline-block; margin-right: 20px; }
+        }
 
+        @media (max-width: 768px) {
+            .safari-menu { display: none; }
+            .main-content, .welcome-section, .safari-detail, 
+            .safari-description, .cards, .card { 
+                width: 100%; max-width: 100%; padding: 20px; margin: 0; 
+            }
+            .cards { flex-direction: column; align-items: center; }
+        }
+
+        /* ===== TIPOGRAFÍA Y ELEMENTOS ===== */
+        h1, h3, strong { font-family: 'Trebuchet MS', sans-serif; }
+
+        h3 { 
+            color: #4B3B2A; /* brun foncé naturel */
+            border-bottom: 2px solid #6B8E23; 
+            padding-bottom: 10px; 
+            margin-bottom: 15px; 
+            font-size: 1.4em; 
+        }
+
+        strong { 
+            color: #1a472a; /* vert forêt foncé */
+            display: block; 
+            margin: 15px 0 5px; 
+            font-size: 1.1em; 
+            font-weight: bold; 
+        }
+
+        /* ===== LISTAS Y ENLACES ===== */
+        ul { list-style-type: none; padding-left: 15px; }
+        li { 
+            margin: 8px 0; 
+            padding-left: 10px; 
+            border-left: 2px solid transparent; 
+            transition: border-left 0.3s ease; 
+        }
+        li:hover { border-left: 2px solid #6B8E23; }
+        a { 
+            color: #8B4513; /* brun chaud */
+            text-decoration: none; 
+            transition: color 0.3s; 
+            display: inline-block; 
+        }
+        a:hover { 
+            color: #556B2F; /* vert kaki */
+            text-decoration: underline; 
+        }
+
+        /* ===== TARJETAS ===== */
+        .cards { 
+            display: flex; 
+            gap: 20px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+            margin: 20px 0; 
+        }
+
+        .card { 
+            width: 220px; 
+            padding: 20px; 
+            border-radius: 12px; 
+            background: #FFFDF8; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            transition: transform 0.3s ease, background-color 0.3s ease; 
+            text-align: center; 
+        }
+
+        .card:hover { 
+            transform: translateY(-10px); 
+            background-color: #FFF2E0; 
+        }
+
+        .card h3 { 
+            font-size: 18px; 
+            color: #4B3B2A; 
+            border-bottom: none; 
+            padding-bottom: 0; 
+            margin-bottom: 10px; 
+        }
+
+        .card p { 
+            font-size: 14px; 
+            color: #5A4A3A; 
+            margin-top: 10px; 
+        }
+
+        /* ===== SCROLLBAR ===== */
+        .safari-menu::-webkit-scrollbar { width: 8px; height: 6px; }
+        .safari-menu::-webkit-scrollbar-track { background: #EDE3C6; }
+        .safari-menu::-webkit-scrollbar-thumb { background: #6B8E23; border-radius: 4px; }
+        .safari-menu::-webkit-scrollbar-thumb:hover { background: #556B2F; }
+
+        /* ===== SECCIONES ===== */
+        .welcome-section { 
+            text-align: center; 
+            padding: 2rem; 
+            width: 100%; 
+            background: linear-gradient(135deg, #F4EAD5, #EBD6A4);
+            border-radius: 12px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .welcome-section h1 { 
+            color: #1a472a; 
+            margin-bottom: 10px; 
+            font-size: 2.5em; 
+            letter-spacing: 2px;
+        }
+
+        .welcome-section p { 
+            color: #4B3B2A; 
+            font-size: 1.2em; 
+            margin-bottom: 30px; 
+        }
+
+        .safari-detail { 
+            max-width: 100%; 
+            margin: 0 auto; 
+            width: 100%; 
+        }
+
+        .safari-info { 
+            display: flex; 
+            gap: 20px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+            margin: 30px 0; 
+            width: 100%; 
+        }
+
+        .info-card { 
+            background: #FFFDF8; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            text-align: center; 
+            min-width: 150px; 
+            border-top: 3px solid #6B8E23;
+        }
+
+        .safari-description { 
+            background: #FFFDF8; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            margin: 30px 0; 
+            width: 100%; 
+        }
+
+        /* ===== BOTÓN ===== */
+        .booking-btn { 
+            background: #6B8E23; 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            font-size: 1.1em; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            transition: background-color 0.3s ease; 
+            display: block; 
+            margin: 0 auto; 
+        }
+
+        .booking-btn:hover { background: #556B2F; }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <section class="welcome-section">
+            <h1>Safari Adventure</h1>
+            <p>Vive la experiencia salvaje de tu vida en el corazón de África</p>
+        </section>
+
+        <section class="safari-detail">
+            <div class="safari-info">
+                <div class="info-card"><h3>Duración</h3><p>5 días / 4 noches</p></div>
+                <div class="info-card"><h3>Precio</h3><p>Desde $1,200 USD</p></div>
+                <div class="info-card"><h3>Grupo</h3><p>Máx. 12 personas</p></div>
+            </div>
+
+            <div class="safari-description">
+                <h3>Descubre la vida salvaje</h3>
+                <p>Embárcate en una aventura inolvidable a través de las vastas llanuras del Serengeti. Nuestro safari exclusivo te llevará a los mejores lugares para observar la Gran Migración, donde millones de ñus, cebras y gacelas cruzan las planicies en busca de pastos frescos.</p>
+                <p>Con guías expertos locales y alojamiento en lodges de lujo, esta experiencia combina aventura y comodidad de manera única.</p>
+                
+                <div class="cards">
+                    <div class="card"><h3>Big Five</h3><p>Posibilidad de avistar los 5 grandes animales africanos</p></div>
+                    <div class="card"><h3>Fotografía</h3><p>Oportunidades únicas para fotografía de vida salvaje</p></div>
+                    <div class="card"><h3>Guías Expertos</h3><p>Guiados por expertos locales con años de experiencia</p></div>
+                </div>
+                
+                <button class="booking-btn">Reservar Ahora</button>
+            </div>
+        </section>
+    </div>
+
+    <aside class="safari-menu">
+        <h3>Nuestros Safaris</h3>
+        <ul>
+            <li><a href="#">Safari Clásico</a></li>
+            <li><a href="#">Safari Fotográfico</a></li>
+            <li><a href="#">Safari en Familia</a></li>
+            <li><a href="#">Safari de Lujo</a></li>
+            <li><a href="#">Safari Aventura</a></li>
+        </ul>
+
+        <strong>Destinos</strong>
+        <ul>
+            <li><a href="#">Serengeti, Tanzania</a></li>
+            <li><a href="#">Masai Mara, Kenia</a></li>
+            <li><a href="#">Kruger, Sudáfrica</a></li>
+            <li><a href="#">Okavango, Botsuana</a></li>
+            <li><a href="#">Etosha, Namibia</a></li>
+        </ul>
+
+        <strong>Información Útil</strong>
+        <ul>
+            <li><a href="#">Mejor época para viajar</a></li>
+            <li><a href="#">Qué llevar</a></li>
+            <li><a href="#">Requisitos de vacunación</a></li>
+            <li><a href="#">Preguntas frecuentes</a></li>
+            <li><a href="#">Testimonios</a></li>
+        </ul>
+    </aside>
+</body>
+</html>
