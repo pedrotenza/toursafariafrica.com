@@ -38,10 +38,10 @@
                 width: 22%; 
                 min-width: 240px; 
                 padding: 1.5rem; 
-                height:  calc(100vh - 100px);
+                height: calc(100vh - 130px);
                 position: fixed; 
                 right: 20px; 
-                top: 100px;
+                top: 130px;
                 border-radius: 12px 0 0 12px;
             }
             .main-content { 

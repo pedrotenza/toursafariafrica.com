@@ -8,14 +8,40 @@
     <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
 </head>
 <body>
+   
+
     <header style="background-color: #1a472a; color: white; padding: 1rem; text-align: center; width: 100%; position: fixed; top: 0; left: 0; z-index: 1100; box-sizing: border-box;">
         <h1 style="margin: 0; font-size: 2rem; letter-spacing: 3px;">TOURSAFARIAFRICA.COM</h1>
     </header>
 
-    <div class="main-content" style="margin-top: 80px;">
+    <!-- 🟢 Second header pour les régions -->
+    <nav class="region-header" 
+        style="background-color: #000000; color: white; padding: 0.6rem; text-align: center; width: 100%; 
+                position: fixed; top: 70px; left: 0; z-index: 1000; box-sizing: border-box;">
+        {% if regions %}
+            {% for region in regions %}
+                <a href="#{{ region.name|slugify }}" 
+                style="margin: 0 15px; color: white; text-decoration: none; font-weight: bold;">
+                    {{ region.name }}
+                </a>
+            {% endfor %}
+        {% else %}
+            <span>No regions available</span>
+        {% endif %}
+    </nav>
 
+    <!-- 🟠 Ajuste le margin-top de ton contenu principal -->
+    <div class="main-content" style="margin-top: 130px;">
         {% block content %}{% endblock %}
     </div>
+
+
+
+
+
+
+
+
 
     {% block sidebar %}
     <div class="safari-menu">
