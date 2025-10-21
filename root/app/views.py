@@ -1,6 +1,7 @@
-from django.shortcuts import render, get_object_or_404, redirect 
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import CreateView
 from django.contrib import messages
+
 from .models import Safari, Booking, HomePage, Participant
 from .services.booking_service import create_booking, confirm_booking_service, cancel_booking_service
 from .forms import BookingForm, ParticipantFormSet
@@ -78,7 +79,7 @@ def booking_confirmed(request, booking_number):
                 booking.refresh_from_db()
             else:
                 messages.error(request, "❌ Error al cancelar la reserva.")
-        
+       
         return redirect('booking_confirmed', booking_number=booking_number)
 
     context = {
@@ -135,12 +136,12 @@ def booking_cancelled(request, booking_number):
     """Nueva vista para mostrar página de cancelación confirmada"""
     booking = get_object_or_404(Booking, booking_number=booking_number)
     participants = Participant.objects.filter(booking=booking)
-    
+   
     context = {
         'booking': booking,
         'participants': participants,
     }
-    
+   
     return render(request, 'app/booking_cancelled.html', context)
 
 
