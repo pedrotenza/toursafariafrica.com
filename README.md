@@ -2,9 +2,9 @@
 Discover Botswana and its wildlife. Book your unforgettable safari adventure today at TourSafariAfrica.com!
 
 
-cd "E:\Visual Studio Code\toursafariafrica.com"
+cd "D:\toursafariafrica.com"
 safari-site-env\Scripts\Activate.ps1
-cd "E:\Visual Studio Code\toursafariafrica.com\root"
+cd ":\toursafariafrica.com\root"
 python manage.py runserver
  
 python manage.py makemigrations

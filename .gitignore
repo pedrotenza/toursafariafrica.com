@@ -2,6 +2,9 @@
 # enviroment
 safari-site-env/
 
+# photos videos
+
+root/media/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
