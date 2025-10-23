@@ -6,79 +6,38 @@
     <title>{% block title %}Safari Booking{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
-    <style>
-        /* ===== RESET Y BASE ===== */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI', Arial, sans-serif; background:#F4EAD5; color:#2B2B2B; line-height:1.6; overflow-x:hidden; }
-
-        /* ===== MENÚ HORIZONTAL SUPERIOR ===== */
-        .region-header{display:flex;gap:15px;background:#6B8E23;padding:10px;border-radius:6px;} /* Fondo verde */
-        .region-dropdown{position:relative;}
-        .region-dropdown button{background:none;border:none;cursor:pointer;color:#fff;font-weight:bold;font-size:1em;} /* Letras blancas */
-        .sub-dropdown{display:none;position:absolute;top:100%;left:0;background:#FFFDF8;padding:10px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,0.15);}
-        .region-dropdown:hover .sub-dropdown{display:block;}
-        .sub-dropdown details{margin-bottom:5px;}
-        .sub-dropdown summary{cursor:pointer;padding:4px 8px;color:#4B3B2A;font-weight:bold;}
-        .sub-dropdown summary:hover{color:#6B8E23;}
-        .sub-dropdown ul{list-style:none;padding-left:15px;margin:5px 0;}
-        .sub-dropdown li a{display:block;padding:2px 6px;color:#6B8E23;text-decoration:none;}
-        .sub-dropdown li a:hover{text-decoration:underline;}
-        @media (max-width:768px){.region-header{flex-direction:column;}.sub-dropdown{position:relative;top:0;left:0;box-shadow:none;padding:5px;}}
-        
-        /* ===== CONTENIDO PRINCIPAL ===== */
-        .main-content{padding:2rem;width:100%;min-height:100vh;}
-        .welcome-section{text-align:center;background:linear-gradient(135deg,#F4EAD5,#EBD6A4);border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.1);margin-bottom:20px;}
-        .welcome-section h1{color:#1a472a;margin-bottom:10px;font-size:2.5em;letter-spacing:2px;}
-        .welcome-section p{color:#4B3B2A;font-size:1.2em;margin-bottom:30px;}
-        .safari-detail{max-width:100%;margin:0 auto;width:100%;}
-        .safari-info{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin:30px 0;width:100%;}
-        .info-card{background:#FFFDF8;padding:20px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);text-align:center;min-width:150px;border-top:3px solid #6B8E23;}
-        .safari-description{background:#FFFDF8;padding:30px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);margin:30px 0;width:100%;}
-        .cards{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin:20px 0;}
-        .card{width:220px;padding:20px;border-radius:12px;background:#FFFDF8;box-shadow:0 4px 8px rgba(0,0,0,0.1);text-align:center;transition:transform 0.3s ease,background-color 0.3s;}
-        .card:hover{transform:translateY(-10px);background:#FFF2E0;}
-        .card h3{font-size:18px;color:#4B3B2A;margin-bottom:10px;}
-        .card p{font-size:14px;color:#5A4A3A;margin-top:10px;}
-        .booking-btn{background:#6B8E23;color:white;border:none;padding:15px 30px;font-size:1.1em;border-radius:5px;cursor:pointer;display:block;margin:0 auto;transition:background 0.3s;}
-        .booking-btn:hover{background:#556B2F;}
-        h1,h3,strong{font-family:'Trebuchet MS',sans-serif;}
-        h3{color:#4B3B2A;border-bottom:2px solid #6B8E23;padding-bottom:10px;margin-bottom:15px;font-size:1.4em;}
-        strong{color:#1a472a;display:block;margin:15px 0 5px;font-size:1.1em;font-weight:bold;}
-        .safari-menu{background:#EDE3C6;overflow-y:auto;box-shadow:-2px 0 10px rgba(0,0,0,0.1);z-index:1000;border-left:5px solid #6B8E23;padding:1rem;}
-        .safari-menu ul{list-style:none;padding-left:15px;}
-        .safari-menu li{margin:8px 0;padding-left:10px;border-left:2px solid transparent;transition:border-left 0.3s;}
-        .safari-menu li:hover{border-left:2px solid #6B8E23;}
-        .safari-menu a{color:#8B4513;text-decoration:none;transition:color 0.3s;}
-        .safari-menu a:hover{color:#556B2F;text-decoration:underline;}
-    </style>
 </head>
 <body>
 
+<!-- ===== HEADER ===== -->
 <header class="main-header">
-    <h1>TOURSAFARIAFRICA.COM</h1>
+    <h1>
+        <a href="{% url 'home' %}" class="header-link">TOURSAFARIAFRICA.COM</a>
+    </h1>
 </header>
 
-<!-- ===== MENÚ HORIZONTAL SUPERIOR ACORDEÓN ===== -->
+<!-- ===== MENÚ HORIZONTAL SUPERIOR ===== -->
 <nav class="region-header">
     {% if regions %}
         {% for region in regions %}
         <div class="region-dropdown">
-            <button>{{ region.name }} ▼</button>
-            <div class="sub-dropdown">
-                {% for sub in region.subregions.all %}
-                <details>
-                    <summary>{{ sub.name }}</summary>
-                    <ul>
-                        {% for safari in sub.safaris.all %}
-                        <li><a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a></li>
-                        {% empty %}
-                        <li>No safaris</li>
-                        {% endfor %}
-                    </ul>
-                </details>
-                {% empty %}
-                <span>No subregions</span>
-                {% endfor %}
+            <button class="region-btn">{{ region.name }} ▼</button>
+            <div class="subregions-dropdown">
+                <ul>
+                    {% for sub in region.subregions.all %}
+                    <li>{{ sub.name }}
+                        <ul>
+                            {% for safari in sub.safaris.all %}
+                                <li><a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a></li>
+                            {% empty %}
+                                <li>No safaris available</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% empty %}
+                    <li>No subregions available</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
         {% endfor %}
@@ -87,6 +46,7 @@
     {% endif %}
 </nav>
 
+<!-- ===== CONTENIDO PRINCIPAL ===== -->
 <div class="content-wrapper">
     <div class="main-content">
         {% block content %}

@@ -11,10 +11,10 @@ body {
     line-height: 1.6;
     color: #2B2B2B;
     width: 100%;
-    overflow-x: hidden;
+    overflow-x: hidden; /* Evita desbordamiento horizontal */
 }
 
-/* ===== HEADER Y NAVEGACIÓN ===== */
+/* ===== HEADER Y NAVEGACIÓN (FIXED) ===== */
 header {
     background-color: #1a472a;
     color: white;
@@ -34,6 +34,18 @@ header h1 {
     letter-spacing: 3px;
 }
 
+.header-link {
+    color: inherit; /* hereda el color blanco */
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.header-link:hover {
+    color: #EBD6A4; /* dorado al pasar el ratón */
+}
+
+/* ===== MENÚ HORIZONTAL SUPERIOR ===== */
 nav.region-header {
     background-color: #000000;
     color: white;
@@ -44,7 +56,6 @@ nav.region-header {
     top: 70px; 
     left: 0;
     z-index: 1000;
-    box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -52,7 +63,6 @@ nav.region-header {
     gap: 10px;
 }
 
-/* Estilos para el Dropdown de Regiones en la Navegación */
 .region-dropdown {
     position: relative;
     display: inline-block;
@@ -104,11 +114,10 @@ nav.region-header {
     display: block;
 }
 
-/* ===== ESTRUCTURA PRINCIPAL ===== */
+/* ===== ESTRUCTURA PRINCIPAL (ESCRITORIO) ===== */
 .content-wrapper {
-    /* Valor de escritorio: 130px */
     margin-top: 130px; 
-    display: flex;
+    display: flex; /* Contenedor flex para main-content y safari-menu */
     width: 100%;
 }
 
@@ -128,7 +137,7 @@ nav.region-header {
     padding: 1.5rem;
     width: 22%;
     min-width: 240px;
-    height: calc(100vh - 130px); 
+    height: calc(100vh - 130px);
     position: sticky;
     top: 130px;
     border-radius: 12px 0 0 12px;
@@ -165,67 +174,81 @@ nav.region-header {
     }
 }
 
-/* ===== DISEÑO RESPONSIVO (MÓVIL) - SOLUCIÓN REFORZADA ===== */
+/* ===== DISEÑO RESPONSIVO (MÓVIL) ===== */
 @media (max-width: 768px) {
-    /* Ocultar el menú lateral en móvil */
-    .safari-menu {
-        display: none;
+    .main-content img, 
+    .main-content video, 
+    .main-content iframe {
+        max-width: 100% !important;
+        height: auto !important;
+        min-width: 0 !important;
     }
 
-    /* POSICIONAMIENTO DE LA BARRA DE NAVEGACIÓN (nav.region-header) */
     nav.region-header {
+        min-width: 0;
         flex-direction: row;
         flex-wrap: wrap;
         gap: 5px;
         padding: 0.5rem;
-        /* CORREGIDO: Debe estar debajo del header (70px) */
-        top: 70px; 
-        /* Asegura que la barra de navegación esté por encima del contenido */
-        z-index: 1000; 
+        top: 70px;
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: center;
     }
 
     .region-btn {
+        flex: 1 1 auto;
+        min-width: 80px;
+        max-width: 150px;
+        text-align: center;
         padding: 6px 10px;
         font-size: 12px;
-        margin: 0;
+        margin: 2px;
     }
 
-    /* AJUSTE DEL CONTENIDO PRINCIPAL (content-wrapper) */
-    .content-wrapper {
-        /* SOLUCIÓN REFORZADA: Se aumenta el margen superior para evitar el solapamiento 
-           cuando el nav.region-header se envuelve en 2 o más filas. */
-        margin-top: 160px; 
+    .safari-menu {
+        display: none;
     }
-    
-    /* Corrección de Anchos y Padding */
-    .welcome-section, .safari-detail, .safari-description, .cards {
-        padding: 0;
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
+
+    .content-wrapper {
+        display: block;
+        width: 100%; 
+        margin-top: 160px;
     }
 
     .main-content {
+        flex: none;
+        width: 100%; 
+        min-width: 0;
         padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .welcome-section, .safari-detail, .safari-description, .cards {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box; 
+        margin: 0;
+        padding: 0;
     }
 
     .welcome-section {
         padding: 20px;
         margin-bottom: 20px;
     }
-
-    /* CORRECCIÓN BFC */
     .safari-description {
         padding: 20px;
         margin: 20px 0;
         overflow: auto;
     }
 
-    /* Corrección de tarjetas */
     .cards {
         flex-direction: column;
         align-items: center;
         gap: 15px;
+        width: 100%;
+        padding: 0;
+        margin: 20px 0;
     }
 
     .card {
@@ -234,15 +257,15 @@ nav.region-header {
         padding: 15px;
     }
 
-    /* CORRECCIÓN VERTICAL EN H3 */
     .safari-description h3 {
         position: static !important;
+        width: 100%;
         display: block;
         margin-bottom: 25px;
     }
 }
 
-/* ===== TIPOGRAFÍA Y ELEMENTOS GENERALES (resto del CSS...) ===== */
+/* ===== TIPOGRAFÍA ===== */
 h1, h3, strong {
     font-family: 'Trebuchet MS', sans-serif;
 }
@@ -265,7 +288,7 @@ strong {
     font-weight: bold;
 }
 
-/* ===== LISTAS, ENLACES, TARJETAS, ETC. ===== */
+/* ===== LISTAS Y ENLACES ===== */
 ul {
     list-style-type: none;
     padding-left: 15px;
@@ -294,6 +317,7 @@ a:hover {
     text-decoration: underline;
 }
 
+/* ===== TARJETAS ===== */
 .cards {
     display: flex;
     gap: 20px;
@@ -331,6 +355,7 @@ a:hover {
     margin-top: 10px;
 }
 
+/* ===== SCROLLBAR MENÚ LATERAL ===== */
 .safari-menu::-webkit-scrollbar {
     width: 8px;
     height: 6px;
@@ -349,6 +374,7 @@ a:hover {
     background: #556B2F;
 }
 
+/* ===== SECCIONES ===== */
 .welcome-section {
     text-align: center;
     background: linear-gradient(135deg, #F4EAD5, #EBD6A4);
@@ -395,7 +421,6 @@ a:hover {
     border-top: 3px solid #6B8E23;
 }
 
-/* CORRECCIÓN DE ERRORES ORIGINALES */
 .safari-description {
     background: #FFFDF8;
     padding: 30px;
