@@ -6,6 +6,11 @@ safari-site-env/
 
 root/media/
 
+node_modules/
+dist/
+*.log
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
