@@ -41,17 +41,15 @@ nav.region-header {
     text-align: center;
     width: 100%;
     position: fixed;
-    top: 70px;
+    top: 70px; 
     left: 0;
     z-index: 1000;
     box-sizing: border-box;
-    
     display: flex;
-    justify-content: center; /* centra los botones horizontalmente */
+    justify-content: center;
     align-items: center;
-    flex-wrap: wrap; /* permite que bajen de línea si no caben */
-    gap: 10px; /* separación entre botones */
-    background-color: #000000; /* opcional: mantener fondo negro */
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 /* Estilos para el Dropdown de Regiones en la Navegación */
@@ -80,12 +78,12 @@ nav.region-header {
 .subregions-dropdown {
     display: none;
     position: absolute;
-    top: 100%; /* Justo debajo del botón */
+    top: 100%;
     left: 0;
-    background-color: #1a472a; /* Color de fondo oscuro para el dropdown */
+    background-color: #1a472a;
     min-width: 200px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-    z-index: 1200; /* Asegura que esté por encima de otros elementos */
+    z-index: 1200;
     border-radius: 4px;
     padding: 10px 0;
 }
@@ -99,7 +97,7 @@ nav.region-header {
 }
 
 .subregions-dropdown a:hover {
-    background-color: #2d5a34; /* Ligeramente más claro al pasar el ratón */
+    background-color: #2d5a34;
 }
 
 .region-dropdown:hover .subregions-dropdown {
@@ -108,8 +106,9 @@ nav.region-header {
 
 /* ===== ESTRUCTURA PRINCIPAL ===== */
 .content-wrapper {
+    /* Valor de escritorio: 130px */
+    margin-top: 130px; 
     display: flex;
-    margin-top: 130px; /* Ajuste para el header y nav fijos */
     width: 100%;
 }
 
@@ -129,7 +128,7 @@ nav.region-header {
     padding: 1.5rem;
     width: 22%;
     min-width: 240px;
-    height: calc(100vh - 130px);
+    height: calc(100vh - 130px); 
     position: sticky;
     top: 130px;
     border-radius: 12px 0 0 12px;
@@ -140,7 +139,7 @@ nav.region-header {
     .content-wrapper {
         flex-direction: column;
     }
-    
+
     .safari-menu {
         position: relative;
         width: 100%;
@@ -153,23 +152,49 @@ nav.region-header {
         height: auto;
         top: 0;
     }
-    
+
     .main-content {
         order: 1;
         padding: 2rem;
         width: 100%;
     }
-    
+
     .safari-menu strong {
         display: inline-block;
         margin-right: 20px;
     }
 }
 
-/* ===== DISEÑO RESPONSIVO (MÓVIL) ===== */
+/* ===== DISEÑO RESPONSIVO (MÓVIL) - SOLUCIÓN REFORZADA ===== */
 @media (max-width: 768px) {
+    /* Ocultar el menú lateral en móvil */
     .safari-menu {
         display: none;
+    }
+
+    /* POSICIONAMIENTO DE LA BARRA DE NAVEGACIÓN (nav.region-header) */
+    nav.region-header {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 5px;
+        padding: 0.5rem;
+        /* CORREGIDO: Debe estar debajo del header (70px) */
+        top: 70px; 
+        /* Asegura que la barra de navegación esté por encima del contenido */
+        z-index: 1000; 
+    }
+
+    .region-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        margin: 0;
+    }
+
+    /* AJUSTE DEL CONTENIDO PRINCIPAL (content-wrapper) */
+    .content-wrapper {
+        /* SOLUCIÓN REFORZADA: Se aumenta el margen superior para evitar el solapamiento 
+           cuando el nav.region-header se envuelve en 2 o más filas. */
+        margin-top: 160px; 
     }
     
     /* Corrección de Anchos y Padding */
@@ -179,49 +204,45 @@ nav.region-header {
         max-width: 100%;
         margin: 0;
     }
-    
+
     .main-content {
         padding: 20px;
     }
-    
+
     .welcome-section {
         padding: 20px;
         margin-bottom: 20px;
     }
-    
-    /* **CORRECCIÓN BFC (Bloque 2)** */
+
+    /* CORRECCIÓN BFC */
     .safari-description {
         padding: 20px;
         margin: 20px 0;
-        /* **CRUCIAL: Crea un nuevo Contexto de Formato de Bloque (BFC).** Esto evita que los márgenes internos (h3 y p) colapsen en el borde superior e inferior del contenedor, 
-        resolviendo solapamientos verticales. */
         overflow: auto;
     }
-    
+
     /* Corrección de tarjetas */
     .cards {
         flex-direction: column;
         align-items: center;
         gap: 15px;
     }
-    
+
     .card {
         width: 100%;
         max-width: 300px;
         padding: 15px;
     }
-    
-    /* **CORRECCIÓN VERTICAL EN H3 (Bloque 1)** */
+
+    /* CORRECCIÓN VERTICAL EN H3 */
     .safari-description h3 {
-        /* Forzamos el comportamiento de bloque normal y aseguramos separación */
         position: static !important;
         display: block;
-        /* Aumentamos el margen inferior para separar de la primera <p> */
         margin-bottom: 25px;
     }
 }
 
-/* ===== TIPOGRAFÍA Y ELEMENTOS GENERALES ===== */
+/* ===== TIPOGRAFÍA Y ELEMENTOS GENERALES (resto del CSS...) ===== */
 h1, h3, strong {
     font-family: 'Trebuchet MS', sans-serif;
 }
@@ -374,6 +395,7 @@ a:hover {
     border-top: 3px solid #6B8E23;
 }
 
+/* CORRECCIÓN DE ERRORES ORIGINALES */
 .safari-description {
     background: #FFFDF8;
     padding: 30px;
@@ -388,12 +410,12 @@ a:hover {
     color: white;
     border: none;
     padding: 15px 30px;
-    font-size: 1.1em;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
     display: block;
     margin: 0 auto;
+    font-size: 1.1em;
 }
 
 .booking-btn:hover {
