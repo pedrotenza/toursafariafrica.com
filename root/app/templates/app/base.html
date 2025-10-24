@@ -6,38 +6,76 @@
     <title>{% block title %}Safari Booking{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
+    <style>
+        /* ESTILOS SIMPLES PARA BOTONES DE SUBREGIONES */
+        .subregion-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .subregion-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .safari-links {
+            display: none;
+            background-color: #2d5a34;
+            padding-left: 20px;
+        }
+        
+        .safari-links.show {
+            display: block;
+        }
+        
+        .safari-links a {
+            color: white;
+            padding: 8px 15px;
+            display: block;
+            text-decoration: none;
+        }
+        
+        .safari-links a:hover {
+            background-color: #3a6b41;
+        }
+    </style>
 </head>
 <body>
 
-<!-- ===== HEADER ===== -->
 <header class="main-header">
-    <h1>
-        <a href="{% url 'home' %}" class="header-link">TOURSAFARIAFRICA.COM</a>
-    </h1>
+    <h1><a href="{% url 'home' %}" class="header-link">TOURSAFARIAFRICA.COM</a></h1>
 </header>
 
-<!-- ===== MENÚ HORIZONTAL SUPERIOR ===== -->
+<!-- MENÚ HORIZONTAL SUPERIOR - VERSIÓN SIMPLIFICADA -->
 <nav class="region-header">
     {% if regions %}
         {% for region in regions %}
         <div class="region-dropdown">
             <button class="region-btn">{{ region.name }} ▼</button>
             <div class="subregions-dropdown">
-                <ul>
-                    {% for sub in region.subregions.all %}
-                    <li>{{ sub.name }}
-                        <ul>
-                            {% for safari in sub.safaris.all %}
-                                <li><a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a></li>
-                            {% empty %}
-                                <li>No safaris available</li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                    {% empty %}
-                    <li>No subregions available</li>
-                    {% endfor %}
-                </ul>
+                {% for sub in region.subregions.all %}
+                    <!-- BOTÓN DE SUBREGION -->
+                    <button class="subregion-btn" onclick="toggleSafaris(this)">
+                        {{ sub.name }} ▶
+                    </button>
+                    
+                    <!-- LINKS DE SAFARIS (ocultos inicialmente) -->
+                    <div class="safari-links">
+                        {% for safari in sub.safaris.all %}
+                            <a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a>
+                        {% empty %}
+                            <a href="#" style="color: #ccc;">No safaris available</a>
+                        {% endfor %}
+                    </div>
+                {% empty %}
+                    <button class="subregion-btn" style="color: #ccc;">No subregions</button>
+                {% endfor %}
             </div>
         </div>
         {% endfor %}
@@ -46,7 +84,6 @@
     {% endif %}
 </nav>
 
-<!-- ===== CONTENIDO PRINCIPAL ===== -->
 <div class="content-wrapper">
     <div class="main-content">
         {% block content %}
@@ -63,12 +100,11 @@
             </div>
             <div class="safari-description">
                 <h3>Descubre la vida salvaje</h3>
-                <p>Embárcate en una aventura inolvidable a través de las vastas llanuras del Serengeti. Nuestro safari exclusivo te llevará a los mejores lugares para observar la Gran Migración, donde millones de ñus, cebras y gacelas cruzan las planicies en busca de pastos frescos.</p>
-                <p>Con guías expertos locales y alojamiento en lodges de lujo, esta experiencia combina aventura y comodidad de manera única.</p>
+                <p>Embárcate en una aventura inolvidable a través de las vastas llanuras del Serengeti...</p>
                 <div class="cards">
-                    <div class="card"><h3>Big Five</h3><p>Posibilidad de avistar los 5 grandes animales africanos</p></div>
-                    <div class="card"><h3>Fotografía</h3><p>Oportunidades únicas para fotografía de vida salvaje</p></div>
-                    <div class="card"><h3>Guías Expertos</h3><p>Guiados por expertos locales con años de experiencia</p></div>
+                    <div class="card"><h3>Big Five</h3><p>Posibilidad de avistar los 5 grandes</p></div>
+                    <div class="card"><h3>Fotografía</h3><p>Oportunidades únicas para fotografía</p></div>
+                    <div class="card"><h3>Guías Expertos</h3><p>Guiados por expertos locales</p></div>
                 </div>
                 <button class="booking-btn">Reservar Ahora</button>
             </div>
@@ -83,18 +119,17 @@
             <strong>{{ region.name }}</strong>
             <ul>
                 {% for sub in region.subregions.all %}
-                    <li>
-                        {{ sub.name }}
+                    <li>{{ sub.name }}
                         <ul>
                             {% for safari in sub.safaris.all %}
                                 <li><a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a></li>
                             {% empty %}
-                                <li>No safaris available in this subregion</li>
+                                <li>No safaris available</li>
                             {% endfor %}
                         </ul>
                     </li>
                 {% empty %}
-                    <li>No subregions available in this region</li>
+                    <li>No subregions available</li>
                 {% endfor %}
             </ul>
         {% empty %}
@@ -103,6 +138,23 @@
     </div>
     {% endblock %}
 </div>
+
+<script>
+// FUNCIÓN SIMPLE QUE SÍ FUNCIONA
+function toggleSafaris(button) {
+    // Encuentra el div de safari-links que sigue al botón
+    var safariLinks = button.nextElementSibling;
+    
+    // Alterna la clase 'show' para mostrar/ocultar
+    if (safariLinks.classList.contains('show')) {
+        safariLinks.classList.remove('show');
+        button.innerHTML = button.textContent.replace('▼', '▶');
+    } else {
+        safariLinks.classList.add('show');
+        button.innerHTML = button.textContent.replace('▶', '▼');
+    }
+}
+</script>
 
 </body>
 </html>
