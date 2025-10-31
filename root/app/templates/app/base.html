@@ -7,7 +7,6 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
     <style>
-        /* ESTILOS SIMPLES PARA BOTONES DE SUBREGIONES */
         .subregion-btn {
             background: none;
             border: none;
@@ -45,7 +44,6 @@
             background-color: #3a6b41;
         }
 
-        /* ESTILO ADICIONAL PARA EL MENÚ LATERAL */
         .safari-menu {
             background-color: #2d5a34;
             padding: 15px;
@@ -65,6 +63,10 @@
         .region-block {
             margin-top: 15px;
         }
+
+        .no-safaris, .no-subregions {
+            color: #ccc;
+        }
     </style>
 </head>
 <body>
@@ -73,7 +75,6 @@
     <h1><a href="{% url 'home' %}" class="header-link">TOURSAFARIAFRICA.COM</a></h1>
 </header>
 
-<!-- MENÚ HORIZONTAL SUPERIOR -->
 <nav class="region-header">
     {% if regions %}
         {% for region in regions %}
@@ -81,21 +82,19 @@
             <button class="region-btn">{{ region.name }} ▼</button>
             <div class="subregions-dropdown">
                 {% for sub in region.subregions.all %}
-                    <!-- BOTÓN DE SUBREGION -->
                     <button class="subregion-btn" onclick="toggleSafaris(this)">
                         {{ sub.name }} ▶
                     </button>
                     
-                    <!-- LINKS DE SAFARIS (ocultos inicialmente) -->
                     <div class="safari-links">
                         {% for safari in sub.safaris.all %}
                             <a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a>
                         {% empty %}
-                            <a href="#" style="color: #ccc;">No safaris available</a>
+                            <a href="#" class="no-safaris">No safaris available</a>
                         {% endfor %}
                     </div>
                 {% empty %}
-                    <button class="subregion-btn" style="color: #ccc;">No subregions</button>
+                    <button class="subregion-btn no-subregions">No subregions</button>
                 {% endfor %}
             </div>
         </div>
@@ -105,8 +104,8 @@
     {% endif %}
 </nav>
 
-<div class="content-wrapper" style="display: flex;">
-    <div class="main-content" style="flex: 1; padding: 20px;">
+<div class="content-wrapper">
+    <div class="main-content">
         {% block content %}
         <section class="welcome-section">
             <h1>Safari Adventure</h1>
@@ -133,31 +132,28 @@
         {% endblock %}
     </div>
 
-    <!-- MENÚ LATERAL CON BOTONES DESPLEGABLES -->
     {% block sidebar %}
     <div class="safari-menu">
         <h3><a href="{% url 'home' %}">🏠 Home</a></h3>
         
         {% for region in regions %}
             <div class="region-block">
-                <strong style="display:block; color:white; margin-top:10px;">{{ region.name }}</strong>
+                <strong>{{ region.name }}</strong>
                 
                 {% for sub in region.subregions.all %}
-                    <!-- BOTÓN DE SUBREGIÓN -->
                     <button class="subregion-btn" onclick="toggleSafaris(this)">
                         {{ sub.name }} ▶
                     </button>
                     
-                    <!-- SAFARIS (ocultos por defecto) -->
                     <div class="safari-links">
                         {% for safari in sub.safaris.all %}
                             <a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a>
                         {% empty %}
-                            <a href="#" style="color: #ccc;">No safaris available</a>
+                            <a href="#" class="no-safaris">No safaris available</a>
                         {% endfor %}
                     </div>
                 {% empty %}
-                    <button class="subregion-btn" style="color: #ccc;">No subregions</button>
+                    <button class="subregion-btn no-subregions">No subregions</button>
                 {% endfor %}
             </div>
         {% empty %}
