@@ -4,7 +4,7 @@ Discover Botswana and its wildlife. Book your unforgettable safari adventure tod
 
 cd "D:\toursafariafrica.com"
 safari-site-env\Scripts\Activate.ps1
-cd ":\toursafariafrica.com\root"
+cd "D:\toursafariafrica.com\root"
 python manage.py runserver
  
 python manage.py makemigrations
@@ -32,6 +32,6 @@ python manage.py createsuperuser
 
 git status
 git add .
-git commit -m " ... "
+git commit -m " fix: mobile responsive layout - full screen content and header overlap "
 git push
 
