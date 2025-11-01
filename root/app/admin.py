@@ -134,6 +134,7 @@ class BookingAdmin(admin.ModelAdmin):
         'safari_name',
         'booking_date',
         'provider_name',
+        'provider_accept_terms',  # Nueva columna
         'provider_response',
         'participants_count',
         'participants_ages',
@@ -156,7 +157,7 @@ class BookingAdmin(admin.ModelAdmin):
         'booking_number',
         'client_name',
         'client_email',
-        'safari__name',  
+        'safari__name',
         'safari__provider__name',
     )
     list_per_page = 25
@@ -183,6 +184,7 @@ class BookingAdmin(admin.ModelAdmin):
         }),
     )
 
+    # Métodos para list_display
     def activity_date(self, obj):
         return obj.date.strftime('%d/%m/%Y') if obj.date else '—'
     activity_date.short_description = 'Date'
@@ -220,13 +222,19 @@ class BookingAdmin(admin.ModelAdmin):
         return obj.safari.provider.name if obj.safari and obj.safari.provider else '—'
     provider_name.short_description = 'Provider'
 
+    def provider_accept_terms(self, obj):
+        """Columna que solo muestra Accepted o Pending"""
+        if obj.confirmed_by_provider is True:
+            return format_html('<span style="color: green;">✅ Accepted</span>')
+        else:  # None → pendiente
+            return format_html('<span style="color: orange;">⏳ Pending</span>')
+    provider_accept_terms.short_description = 'Provider Accepted Terms'
+
     def provider_response(self, obj):
         if obj.provider_response_date:
             response_time = obj.provider_response_date.strftime('%d/%m/%Y %H:%M')
             if obj.confirmed_by_provider:
                 return format_html('<span style="color: green;">{} (Accepted)</span>', response_time)
-            elif obj.confirmed_by_provider is False:
-                return format_html('<span style="color: red;">{} (Rejected)</span>', response_time)
         return format_html('<span style="color: orange;">Pending</span>')
     provider_response.short_description = 'Prov Resp'
 

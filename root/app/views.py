@@ -65,13 +65,21 @@ def booking_confirmed(request, booking_number):
 
     if request.method == 'POST':
         action = request.POST.get('action')
+        
         if action == 'confirm':
+            # ✅ Validación de aceptación de términos
+            accept_terms = request.POST.get('accept_terms')
+            if not accept_terms:
+                messages.error(request, "Debes aceptar los términos y condiciones para confirmar la reserva.")
+                return redirect('booking_confirmed', booking_number=booking_number)
+
             html_result = confirm_booking_service(booking.id, request)
             if "✅" in html_result:
                 messages.success(request, "✅ Reserva confirmada correctamente.")
                 booking.refresh_from_db()
             else:
                 messages.error(request, "❌ Error al confirmar la reserva.")
+                
         elif action == 'cancel':
             html_result = cancel_booking_service(booking.id)
             if "❌ Booking canceled successfully" in html_result:
@@ -99,6 +107,12 @@ def confirm_booking(request, booking_id):
     participants = Participant.objects.filter(booking=booking)
 
     if request.method == 'POST':
+        # ✅ Validación de aceptación de términos
+        accept_terms = request.POST.get('accept_terms')
+        if not accept_terms:
+            messages.error(request, "Debes aceptar los términos y condiciones para confirmar la reserva.")
+            return redirect('booking_confirmed', booking_number=booking.booking_number)
+
         html_result = confirm_booking_service(booking_id, request)
         if "✅" in html_result:
             messages.success(request, "Reserva confirmada correctamente.")
@@ -120,7 +134,6 @@ def cancel_booking(request, booking_id):
         html_result = cancel_booking_service(booking_id)
         if "❌ Booking canceled successfully" in html_result:
             messages.success(request, "Reserva cancelada correctamente.")
-            # ✅ CORREGIDO: Redirigir a booking_cancelled en lugar de booking_confirmed
             return redirect('booking_cancelled', booking_number=booking.booking_number)
         else:
             messages.error(request, "No se pudo cancelar la reserva.")
@@ -133,7 +146,7 @@ def cancel_booking(request, booking_id):
 
 
 def booking_cancelled(request, booking_number):
-    """Nueva vista para mostrar página de cancelación confirmada"""
+    """Vista para mostrar página de cancelación confirmada"""
     booking = get_object_or_404(Booking, booking_number=booking_number)
     participants = Participant.objects.filter(booking=booking)
    

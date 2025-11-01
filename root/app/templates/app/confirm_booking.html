@@ -114,8 +114,7 @@
                     <div class="col-md-6">
                         <strong>Date:</strong> {{ booking.date|date:"d-m-Y" }}
                     </div>
-                </div>
-                
+                </div>                                
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Client:</strong> {{ booking.client_name }}
@@ -123,12 +122,11 @@
                     <div class="col-md-6">
                         <strong>Participants:</strong> {{ booking.number_of_people }}
                     </div>
-                </div>
+                </div>                 
 
                 <!-- Detalles de participantes -->
                 <div class="participants-section">
-                    <h5 class="mb-3">Participants Details:</h5>
-                    
+                    <h5 class="mb-3">Participants Details:</h5>                                         
                     {% if participants %}
                     <table class="table table-sm table-bordered">
                         <thead class="table-light">
@@ -153,34 +151,29 @@
                         <strong>No participant details available.</strong>
                     </div>
                     {% endif %}
-                </div>
+                </div>                 
 
-                <!-- Sección de precios - TEXTO Y CIFRAS PEGADOS -->
+                <!-- Sección de precios -->
                 <div class="price-section">
-                    <div class="price-header">💰 Price Details</div>
-                    
+                    <div class="price-header">💰 Price Details</div>                                         
                     <div class="price-item">
                         <span class="price-label">📅 Selected Date:</span>
                         <span class="price-value">{{ booking.date|date:"d-m-Y" }}</span>
-                    </div>
-                    
+                    </div>                                         
                     <div class="price-item">
                         <span class="price-label">👤 Price per Person:</span>
                         <span class="price-value">{{ booking.safari.provider_price|floatformat:2 }} €</span>
-                    </div>
-                    
+                    </div>                                         
                     <div class="price-item">
                         <span class="price-label">👥 Number of Participants:</span>
                         <span class="price-value">{{ booking.number_of_people }}</span>
-                    </div>
-                    
-                    <div class="price-divider"></div>
-                    
+                    </div>                                         
+                    <div class="price-divider"></div>                                         
                     <div class="price-total d-flex justify-content-between align-items-center">
                         <span class="total-label">💰 Amount to Be Paid:</span>
                         <span class="total-value">{% widthratio booking.safari.provider_price 1 booking.number_of_people %} €</span>
                     </div>
-                </div>
+                </div>                 
 
                 <!-- Estado de la reserva -->
                 {% if booking.status == 'confirmed' %}
@@ -203,6 +196,15 @@
                     <div class="col-md-12 mb-2">
                         <form method="post" action="">
                             {% csrf_token %}
+
+                            <!-- Checkbox de aceptación de términos y responsabilidad -->
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" name="accept_terms" value="accepted" id="termsCheckbox" required>
+                                <label class="form-check-label" for="termsCheckbox">
+                                    I have read and accept the <a href="/terms-and-conditions" target="_blank">Terms and Conditions</a>, and I hereby acknowledge and assume all legal responsibility and liabilities arising from the activity.
+                                </label>
+                            </div>
+
                             <input type="hidden" name="action" value="confirm">
                             <button type="submit" class="btn btn-success btn-lg w-100 py-2" onclick="return confirm('Are you sure you want to CONFIRM this booking? This will send confirmation emails to both client and provider.')">
                                 ✅ Confirm Booking
@@ -230,8 +232,18 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>     
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validación adicional en JS
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const checkbox = document.getElementById('termsCheckbox');
+            if (!checkbox.checked) {
+                e.preventDefault();
+                alert('You must accept the Terms and Conditions and assume responsibility before confirming the booking.');
+            }
+        });
+    </script>
 </body>
 </html>
