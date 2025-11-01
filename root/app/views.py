@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import CreateView
 from django.contrib import messages
 from django.utils import timezone
+from django.urls import reverse
 
 from .models import Safari, Booking, HomePage, Participant
 from .services.booking_service import create_booking, confirm_booking_service, cancel_booking_service
@@ -14,7 +15,6 @@ def get_client_ip(request):
     """
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
-        # X-Forwarded-For may contain multiple IPs, client is first
         ip = x_forwarded_for.split(',')[0].strip()
     else:
         ip = request.META.get('REMOTE_ADDR')
@@ -68,6 +68,17 @@ def safari_detail(request, safari_id):
     })
 
 
+def provider_terms_view(request, booking_id=None):
+    """
+    Vista para mostrar los Términos y Condiciones del proveedor.
+    Muestra info de la reserva si se pasa booking_id.
+    """
+    booking = None
+    if booking_id:
+        booking = get_object_or_404(Booking, id=booking_id)
+    return render(request, 'app/provider_terms_and_conditions.html', {'booking': booking})
+
+
 def booking_confirmed(request, booking_number):
     booking = get_object_or_404(Booking, booking_number=booking_number)
     participants = Participant.objects.filter(booking=booking)
@@ -81,30 +92,24 @@ def booking_confirmed(request, booking_number):
         action = request.POST.get('action')
 
         if action == 'confirm':
-            # ✅ Validación de aceptación de términos
             accept_terms = request.POST.get('accept_terms')
             if not accept_terms:
                 messages.error(request, "Debes aceptar los términos y condiciones para confirmar la reserva.")
                 return redirect('booking_confirmed', booking_number=booking_number)
 
-            # Guardar evidencia legal en la reserva antes/tras llamar al servicio
+            # Guardar evidencia legal del proveedor
             booking.provider_accepted_terms = True
             booking.provider_acceptance_datetime = timezone.now()
             booking.provider_acceptance_ip = get_client_ip(request)
             booking.provider_acceptance_user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
-            # Guarda el texto exacto aceptado (opcional, pero útil)
             booking.provider_acceptance_text = (
                 "I have read and accept the Terms and Conditions, and as the provider, "
                 "I hereby acknowledge and assume all legal responsibility and liabilities arising from the activity."
             )
-
-            # mark provider confirmed flags as well (existing semantics)
             booking.confirmed_by_provider = True
             booking.provider_response_date = timezone.now()
-
             booking.save()
 
-            # Ejecuta tu servicio de confirmación (manteniendo tu lógica)
             html_result = confirm_booking_service(booking.id, request)
             if "✅" in html_result:
                 messages.success(request, "✅ Reserva confirmada correctamente.")
@@ -129,6 +134,7 @@ def booking_confirmed(request, booking_number):
         'total_client_amount': total_client_amount,
         'total_provider_amount': total_provider_amount,
         'is_provider_view': is_provider_view,
+        'provider_terms_url': reverse('provider_terms', args=[booking.id])
     }
 
     return render(request, 'app/booking_confirmed.html', context)
@@ -139,13 +145,11 @@ def confirm_booking(request, booking_id):
     participants = Participant.objects.filter(booking=booking)
 
     if request.method == 'POST':
-        # ✅ Validación de aceptación de términos
         accept_terms = request.POST.get('accept_terms')
         if not accept_terms:
             messages.error(request, "Debes aceptar los términos y condiciones para confirmar la reserva.")
             return redirect('booking_confirmed', booking_number=booking.booking_number)
 
-        # Guardar evidencia legal
         booking.provider_accepted_terms = True
         booking.provider_acceptance_datetime = timezone.now()
         booking.provider_acceptance_ip = get_client_ip(request)
@@ -168,6 +172,7 @@ def confirm_booking(request, booking_id):
     return render(request, 'app/confirm_booking.html', {
         'booking': booking,
         'participants': participants,
+        'provider_terms_url': reverse('provider_terms', args=[booking.id])
     })
 
 
@@ -191,7 +196,6 @@ def cancel_booking(request, booking_id):
 
 
 def booking_cancelled(request, booking_number):
-    """Vista para mostrar página de cancelación confirmada"""
     booking = get_object_or_404(Booking, booking_number=booking_number)
     participants = Participant.objects.filter(booking=booking)
 
