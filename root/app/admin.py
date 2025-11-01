@@ -5,6 +5,9 @@ from datetime import timedelta
 from django.utils.html import format_html
 from django.db.models import Value
 from django.db.models.functions import Concat
+from django.urls import path
+from django.template.response import TemplateResponse
+
 from .models import (
     Safari,
     Booking,
@@ -17,7 +20,9 @@ from .models import (
     Participant
 )
 
-# Filtro de fecha personalizado
+# ===============================
+# Filtro personalizado por fechas
+# ===============================
 class DateRangeFilter(admin.SimpleListFilter):
     title = 'Date range'
     parameter_name = 'date_range'
@@ -37,36 +42,32 @@ class DateRangeFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         today = timezone.now().date()
-        
-        if self.value() == 'last_12_months':
-            last_year = today - timedelta(days=365)
-            return queryset.filter(date__range=[last_year, today])
-        if self.value() == 'last_month':
-            last_month = today - timedelta(days=30)
-            return queryset.filter(date__range=[last_month, today])
-        if self.value() == 'last_week':
-            last_week = today - timedelta(days=7)
-            return queryset.filter(date__range=[last_week, today])
-        if self.value() == 'yesterday':
-            yesterday = today - timedelta(days=1)
-            return queryset.filter(date=yesterday)
-        if self.value() == 'today':
+
+        mapping = {
+            'last_12_months': today - timedelta(days=365),
+            'last_month': today - timedelta(days=30),
+            'last_week': today - timedelta(days=7),
+            'yesterday': today - timedelta(days=1),
+        }
+
+        if self.value() in mapping:
+            return queryset.filter(date__range=[mapping[self.value()], today])
+        elif self.value() == 'today':
             return queryset.filter(date=today)
-        if self.value() == 'tomorrow':
-            tomorrow = today + timedelta(days=1)
-            return queryset.filter(date=tomorrow)
-        if self.value() == 'next_week':
-            next_week = today + timedelta(days=7)
-            return queryset.filter(date__range=[today, next_week])
-        if self.value() == 'next_month':
-            next_month = today + timedelta(days=30)
-            return queryset.filter(date__range=[today, next_month])
-        if self.value() == 'next_12_months':
-            next_year = today + timedelta(days=365)
-            return queryset.filter(date__range=[today, next_year])
+        elif self.value() == 'tomorrow':
+            return queryset.filter(date=today + timedelta(days=1))
+        elif self.value() == 'next_week':
+            return queryset.filter(date__range=[today, today + timedelta(days=7)])
+        elif self.value() == 'next_month':
+            return queryset.filter(date__range=[today, today + timedelta(days=30)])
+        elif self.value() == 'next_12_months':
+            return queryset.filter(date__range=[today, today + timedelta(days=365)])
         return queryset
 
-# Formulario personalizado para Booking
+
+# ===============================
+# Formularios personalizados
+# ===============================
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
@@ -82,7 +83,7 @@ class BookingForm(forms.ModelForm):
             }),
         }
 
-# Formulario personalizado para Participant
+
 class ParticipantForm(forms.ModelForm):
     class Meta:
         model = Participant
@@ -99,15 +100,20 @@ class ParticipantForm(forms.ModelForm):
             'pattern': '[0-9]*',
         })
 
+
+# ===============================
 # Inlines
+# ===============================
 class SafariImageInline(admin.TabularInline):
     model = SafariImage
     extra = 1
     max_num = 10
 
+
 class SafariItineraryItemInline(admin.TabularInline):
     model = SafariItineraryItem
     extra = 1
+
 
 class ParticipantInline(admin.TabularInline):
     model = Participant
@@ -118,6 +124,10 @@ class ParticipantInline(admin.TabularInline):
     verbose_name = "Participant"
     verbose_name_plural = "Participants"
 
+
+# ===============================
+# ADMIN: Safari
+# ===============================
 @admin.register(Safari)
 class SafariAdmin(admin.ModelAdmin):
     list_display = ('name', 'subregion', 'min_people', 'max_people')
@@ -125,6 +135,10 @@ class SafariAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     inlines = [SafariImageInline, SafariItineraryItemInline]
 
+
+# ===============================
+# ADMIN: Booking
+# ===============================
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     form = BookingForm
@@ -134,7 +148,7 @@ class BookingAdmin(admin.ModelAdmin):
         'safari_name',
         'booking_date',
         'provider_name',
-        'provider_accept_terms',  # Nueva columna
+        'provider_accept_terms',
         'provider_response',
         'participants_count',
         'participants_ages',
@@ -163,7 +177,7 @@ class BookingAdmin(admin.ModelAdmin):
     list_per_page = 25
     list_select_related = ('safari', 'safari__provider')
     inlines = [ParticipantInline]
-    
+
     fieldsets = (
         (None, {
             'fields': (
@@ -180,15 +194,54 @@ class BookingAdmin(admin.ModelAdmin):
         }),
         ('Provider Confirmation', {
             'classes': ('collapse',),
-            'fields': ('confirmed_by_provider', 'provider_response_date'),
+            'fields': (
+                'confirmed_by_provider',
+                'provider_response_date',
+                'provider_accepted_terms',
+                'provider_acceptance_datetime',
+                'provider_acceptance_ip',
+                'provider_acceptance_text',
+                'provider_acceptance_user_agent',
+            ),
         }),
     )
 
-    # Métodos para list_display
+    # ==========================
+    # URL personalizada del admin
+    # ==========================
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                '<int:booking_id>/provider_acceptance_info/',
+                self.admin_site.admin_view(self.provider_acceptance_info_view),
+                name='provider_acceptance_info',
+            ),
+        ]
+        return custom_urls + urls
+
+    def provider_acceptance_info_view(self, request, booking_id):
+        booking = Booking.objects.get(pk=booking_id)
+        context = dict(
+            self.admin_site.each_context(request),
+            title=f"Provider Acceptance Details – {booking.booking_number}",
+            booking=booking,
+            fields={
+                "Accepted Terms": "✅ Yes" if booking.provider_accepted_terms else "❌ No",
+                "Acceptance Date/Time": booking.provider_acceptance_datetime.strftime("%d/%m/%Y %H:%M") if booking.provider_acceptance_datetime else "—",
+                "IP Address": booking.provider_acceptance_ip or "—",
+                "User Agent": booking.provider_acceptance_user_agent or "—",
+                "Accepted Text": booking.provider_acceptance_text or "—",
+            },
+        )
+        return TemplateResponse(request, "app/provider_acceptance_info.html", context)
+
+    # ==========================
+    # Columnas personalizadas
+    # ==========================
     def activity_date(self, obj):
         return obj.date.strftime('%d/%m/%Y') if obj.date else '—'
     activity_date.short_description = 'Date'
-    activity_date.admin_order_field = 'date'
 
     def safari_name(self, obj):
         return obj.safari.name if obj.safari else '—'
@@ -223,12 +276,16 @@ class BookingAdmin(admin.ModelAdmin):
     provider_name.short_description = 'Provider'
 
     def provider_accept_terms(self, obj):
-        """Columna que solo muestra Accepted o Pending"""
-        if obj.confirmed_by_provider is True:
-            return format_html('<span style="color: green;">✅ Accepted</span>')
-        else:  # None → pendiente
+        """Columna con enlace al detalle de aceptación."""
+        if obj.provider_accepted_terms:
+            url = f"/admin/app/booking/{obj.id}/provider_acceptance_info/"
+            return format_html(
+                '<a class="button" style="background-color:#28a745;color:white;padding:3px 6px;border-radius:4px;text-decoration:none;" href="{}">✅ Accepted</a>', 
+                url
+            )
+        else:
             return format_html('<span style="color: orange;">⏳ Pending</span>')
-    provider_accept_terms.short_description = 'Provider Accepted Terms'
+    provider_accept_terms.short_description = "Provider Accepted Terms"
 
     def provider_response(self, obj):
         if obj.provider_response_date:
@@ -260,7 +317,7 @@ class BookingAdmin(admin.ModelAdmin):
     your_profit.short_description = 'Profit'
 
     def client_payment(self, obj):
-        if obj.payment_amount: 
+        if obj.payment_amount:
             return format_html('<span style="color: black;">{}</span>', f"{obj.payment_amount:.2f}")
         return "—"
     client_payment.short_description = 'Client Price tot'
@@ -284,29 +341,28 @@ class BookingAdmin(admin.ModelAdmin):
             return f"{obj.client_phone_prefix} {obj.client_phone_number}"
         return "—"
     formatted_client_phone.short_description = 'Phone'
-    formatted_client_phone.admin_order_field = 'client_phone_number'
 
-    # Sobrescribimos búsqueda para incluir teléfono completo
     def get_search_results(self, request, queryset, search_term):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
-        
         if search_term:
             queryset |= self.model.objects.annotate(
                 full_phone=Concat('client_phone_prefix', Value(' '), 'client_phone_number')
             ).filter(full_phone__icontains=search_term)
-        
         return queryset, use_distinct
 
     class Media:
-        css = {
-            'all': ('app/css/admin_custom.css?v=2.1',)
-        }
+        css = {'all': ('app/css/admin_custom.css?v=2.1',)}
         js = ('app/js/admin_custom.js?v=2.1',)
 
+
+# ===============================
+# Otros modelos
+# ===============================
 @admin.register(Region)
 class RegionAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+
 
 @admin.register(SubRegion)
 class SubRegionAdmin(admin.ModelAdmin):
@@ -314,10 +370,12 @@ class SubRegionAdmin(admin.ModelAdmin):
     list_filter = ('region',)
     search_fields = ('name',)
 
+
 @admin.register(HomePage)
 class HomePageAdmin(admin.ModelAdmin):
     list_display = ('hero_title', 'why_choose_title', 'destinations_title')
     search_fields = ('hero_title', 'why_choose_title', 'destinations_title')
+
 
 @admin.register(Provider)
 class ProviderAdmin(admin.ModelAdmin):

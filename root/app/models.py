@@ -51,7 +51,6 @@ class Safari(models.Model):
         Provider,
         on_delete=models.CASCADE,
         related_name='safaris',
-
     )
     min_people = models.PositiveIntegerField(default=1)
     max_people = models.PositiveIntegerField(default=10)
@@ -146,12 +145,18 @@ class Booking(models.Model):
 
         return f"{prefix} {number}".strip() if prefix else number
 
-
-
-
+    # Existing provider confirmation flags
     confirmed_by_provider = models.BooleanField(default=False)
     provider_response_date = models.DateTimeField(null=True, blank=True)
 
+    # --- New fields to store legal acceptance evidence ---
+    provider_accepted_terms = models.BooleanField(default=False, help_text="True if provider accepted the terms at confirmation")
+    provider_acceptance_datetime = models.DateTimeField(null=True, blank=True)
+    provider_acceptance_ip = models.GenericIPAddressField(null=True, blank=True)
+    provider_acceptance_user_agent = models.TextField(null=True, blank=True)
+    provider_acceptance_text = models.TextField(null=True, blank=True, help_text="Exact text/phrase the provider accepted (snapshot)")
+
+    # Payment fields
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
