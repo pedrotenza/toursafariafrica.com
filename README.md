@@ -29,9 +29,9 @@ python manage.py createsuperuser
 
 
 
-
+cd "D:\toursafariafrica.com"
 git status
 git add .
-git commit -m " fix: mobile responsive layout - full screen content and header overlap "
+git commit -m "Update safari detail template: fixed Terms & Conditions link to open client terms page correctly"
 git push
 

@@ -32,8 +32,8 @@ def safari_list(request):
 
 
 def safari_detail(request, safari_id):
-    activity = get_object_or_404(Safari, pk=safari_id)
-    highlight_lines = [line.strip() for line in (activity.highlights.split('.') if activity.highlights else []) if line.strip()]
+    safari = get_object_or_404(Safari, pk=safari_id)
+    highlight_lines = [line.strip() for line in (safari.highlights.split('.') if safari.highlights else []) if line.strip()]
     error_message = None
 
     if request.method == 'POST':
@@ -41,13 +41,13 @@ def safari_detail(request, safari_id):
         post_data['client_phone_prefix'] = post_data.get('client_phone_prefix', '')
         post_data['client_phone_number'] = post_data.get('client_phone_number', '')
 
-        booking, error_message = create_booking(post_data, activity, request)
+        booking, error_message = create_booking(post_data, safari, request)
         if error_message:
             return render(request, 'app/safari_detail.html', {
-                'safari': activity,
+                'safari': safari,
                 'highlight_lines': highlight_lines,
                 'error_message': error_message,
-                'price_per_person': activity.client_price,
+                'price_per_person': safari.client_price,
             })
 
         client_email = booking.client_email if booking else "the client"
@@ -61,24 +61,37 @@ def safari_detail(request, safari_id):
         )
 
     return render(request, 'app/safari_detail.html', {
-        'safari': activity,
+        'safari': safari,
         'highlight_lines': highlight_lines,
         'error_message': error_message,
-        'price_per_person': activity.client_price,
+        'price_per_person': safari.client_price,
+        'client_terms_url': reverse('client_terms')  # <--- Enlace al template de cliente
     })
 
 
+# -------------------------------
+# VISTA DE TÉRMINOS DEL CLIENTE
+# -------------------------------
+def client_terms_view(request):
+    """
+    Muestra el template de Terms and Conditions para el cliente
+    """
+    return render(request, 'app/client_terms_and_conditions.html')
+
+
+# -------------------------------
+# VISTA DE TÉRMINOS DEL PROVEEDOR
+# -------------------------------
 def provider_terms_view(request, booking_id=None):
-    """
-    Vista para mostrar los Términos y Condiciones del proveedor.
-    Muestra info de la reserva si se pasa booking_id.
-    """
     booking = None
     if booking_id:
         booking = get_object_or_404(Booking, id=booking_id)
     return render(request, 'app/provider_terms_and_conditions.html', {'booking': booking})
 
 
+# -------------------------------
+# CONFIRMACIÓN DE RESERVA
+# -------------------------------
 def booking_confirmed(request, booking_number):
     booking = get_object_or_404(Booking, booking_number=booking_number)
     participants = Participant.objects.filter(booking=booking)

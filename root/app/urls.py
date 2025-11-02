@@ -19,7 +19,12 @@ urlpatterns = [
     path('confirm/<int:booking_id>/', views.confirm_booking, name='confirm_booking_short'),
 
     # ==============================
-    # Términos del proveedor (archivo físico)
+    # Términos del proveedor
     # ==============================
     path('provider-terms/<int:booking_id>/', views.provider_terms_view, name='provider_terms'),
+
+    # ==============================
+    # Términos del cliente
+    # ==============================
+    path('client-terms/', views.client_terms_view, name='client_terms'),
 ]
