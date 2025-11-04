@@ -7,17 +7,9 @@ from django.db.models import Value
 from django.db.models.functions import Concat
 from django.urls import path
 from django.template.response import TemplateResponse
-
 from .models import (
-    Safari,
-    Booking,
-    Region,
-    SubRegion,
-    SafariImage,
-    SafariItineraryItem,
-    HomePage,
-    Provider,
-    Participant
+    Safari, Booking, Region, SubRegion, SafariImage,
+    SafariItineraryItem, HomePage, Provider, Participant
 )
 
 # ===============================
@@ -42,14 +34,12 @@ class DateRangeFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         today = timezone.now().date()
-
         mapping = {
             'last_12_months': today - timedelta(days=365),
             'last_month': today - timedelta(days=30),
             'last_week': today - timedelta(days=7),
             'yesterday': today - timedelta(days=1),
         }
-
         if self.value() in mapping:
             return queryset.filter(date__range=[mapping[self.value()], today])
         elif self.value() == 'today':
@@ -142,38 +132,25 @@ class SafariAdmin(admin.ModelAdmin):
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     form = BookingForm
+
     list_display = (
-        'booking_number',
-        'activity_date',
-        'safari_name',
-        'booking_date',
-        'provider_name',
-        'provider_accept_terms',
-        'provider_response',
-        'participants_count',
-        'participants_ages',
-        'participants_nationalities',
-        'price',
-        'provider_earnings',
-        'your_profit',
-        'client_payment',
-        'client_unit_price',
-        'client_name',
-        'client_email',
-        'formatted_client_phone',
+        'booking_number', 'activity_date', 'safari_name', 'booking_date',
+        'provider_name', 'provider_accept_terms', 'client_accept_terms',
+        'provider_response', 'participants_count', 'participants_ages',
+        'participants_nationalities', 'price', 'provider_earnings',
+        'your_profit', 'client_payment', 'client_unit_price',
+        'client_name', 'client_email', 'formatted_client_phone',
     )
+
     list_filter = (
-        DateRangeFilter,
-        'confirmed_by_provider',
-        'payment_status',
+        DateRangeFilter, 'confirmed_by_provider', 'payment_status',
     )
+
     search_fields = (
-        'booking_number',
-        'client_name',
-        'client_email',
-        'safari__name',
-        'safari__provider__name',
+        'booking_number', 'client_name', 'client_email',
+        'safari__name', 'safari__provider__name',
     )
+
     list_per_page = 25
     list_select_related = ('safari', 'safari__provider')
     inlines = [ParticipantInline]
@@ -181,33 +158,26 @@ class BookingAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': (
-                'safari',
-                'date',
-                'number_of_people',
+                'safari', 'date', 'number_of_people',
                 ('client_name', 'client_email'),
                 ('client_phone_prefix', 'client_phone_number'),
-                'payment_status',
-                'payment_amount',
-                'payment_method',
+                'payment_status', 'payment_amount', 'payment_method',
                 'transaction_id'
             )
         }),
         ('Provider Confirmation', {
             'classes': ('collapse',),
             'fields': (
-                'confirmed_by_provider',
-                'provider_response_date',
-                'provider_accepted_terms',
-                'provider_acceptance_datetime',
-                'provider_acceptance_ip',
-                'provider_acceptance_text',
+                'confirmed_by_provider', 'provider_response_date',
+                'provider_accepted_terms', 'provider_acceptance_datetime',
+                'provider_acceptance_ip', 'provider_acceptance_text',
                 'provider_acceptance_user_agent',
             ),
         }),
     )
 
     # ==========================
-    # URL personalizada del admin
+    # URLs personalizadas
     # ==========================
     def get_urls(self):
         urls = super().get_urls()
@@ -216,6 +186,11 @@ class BookingAdmin(admin.ModelAdmin):
                 '<int:booking_id>/provider_acceptance_info/',
                 self.admin_site.admin_view(self.provider_acceptance_info_view),
                 name='provider_acceptance_info',
+            ),
+            path(
+                '<int:booking_id>/client_acceptance_info/',
+                self.admin_site.admin_view(self.client_acceptance_info_view),
+                name='client_acceptance_info',
             ),
         ]
         return custom_urls + urls
@@ -228,13 +203,30 @@ class BookingAdmin(admin.ModelAdmin):
             booking=booking,
             fields={
                 "Accepted Terms": "✅ Yes" if booking.provider_accepted_terms else "❌ No",
-                "Acceptance Date/Time": booking.provider_acceptance_datetime.strftime("%d/%m/%Y %H:%M") if booking.provider_acceptance_datetime else "—",
+                "Acceptance Date/Time": booking.provider_acceptance_datetime.strftime("%d/%m/%Y %H:%M")
+                if booking.provider_acceptance_datetime else "—",
                 "IP Address": booking.provider_acceptance_ip or "—",
                 "User Agent": booking.provider_acceptance_user_agent or "—",
                 "Accepted Text": booking.provider_acceptance_text or "—",
             },
         )
         return TemplateResponse(request, "app/provider_acceptance_info.html", context)
+
+    def client_acceptance_info_view(self, request, booking_id):
+        booking = Booking.objects.get(pk=booking_id)
+        context = dict(
+            self.admin_site.each_context(request),
+            title=f"Client Acceptance Details – {booking.booking_number}",
+            booking=booking,
+            fields={
+                "Accepted Terms": "✅ Yes" if booking.client_accepted_terms else "❌ No",
+                "Acceptance Date/Time": booking.client_acceptance_datetime.strftime("%d/%m/%Y %H:%M")
+                if booking.client_acceptance_datetime else "—",
+                "IP Address": booking.client_acceptance_ip or "—",
+                "User Agent": booking.client_acceptance_user_agent or "—",
+            },
+        )
+        return TemplateResponse(request, "app/client_acceptance_info.html", context)
 
     # ==========================
     # Columnas personalizadas
@@ -276,16 +268,26 @@ class BookingAdmin(admin.ModelAdmin):
     provider_name.short_description = 'Provider'
 
     def provider_accept_terms(self, obj):
-        """Columna con enlace al detalle de aceptación."""
         if obj.provider_accepted_terms:
             url = f"/admin/app/booking/{obj.id}/provider_acceptance_info/"
             return format_html(
-                '<a class="button" style="background-color:#28a745;color:white;padding:3px 6px;border-radius:4px;text-decoration:none;" href="{}">✅ Accepted</a>', 
-                url
+                '<a class="button" style="background-color:#28a745;color:white;padding:3px 6px;border-radius:4px;text-decoration:none;" href="{}">✅ Accepted</a>', url
             )
         else:
             return format_html('<span style="color: orange;">⏳ Pending</span>')
     provider_accept_terms.short_description = "Provider Accepted Terms"
+
+    def client_accept_terms(self, obj):
+        """Botón que lleva al detalle de aceptación del cliente."""
+        if obj.client_accepted_terms:
+            url = f"/admin/app/booking/{obj.id}/client_acceptance_info/"
+            return format_html(
+                '<a class="button" style="background-color:#007bff;color:white;padding:3px 6px;border-radius:4px;text-decoration:none;" href="{}">✅ Accepted</a>',
+                url
+            )
+        else:
+            return format_html('<span style="color: orange;">⏳ Pending</span>')
+    client_accept_terms.short_description = "Client Accepted Terms"
 
     def provider_response(self, obj):
         if obj.provider_response_date:

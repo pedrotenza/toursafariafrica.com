@@ -126,6 +126,13 @@ class Booking(models.Model):
     client_phone_prefix = models.CharField(max_length=5, blank=True, null=True)
     client_phone_number = models.CharField(max_length=20, blank=True, null=True)
 
+    # --- NUEVOS CAMPOS: aceptación de términos del cliente ---
+    client_accepted_terms = models.BooleanField(default=False, help_text="True if client accepted terms and conditions")
+    client_acceptance_datetime = models.DateTimeField(null=True, blank=True)
+    client_acceptance_ip = models.GenericIPAddressField(null=True, blank=True)
+    client_acceptance_user_agent = models.TextField(null=True, blank=True)
+    client_acceptance_text = models.TextField(null=True, blank=True, help_text="Snapshot of terms text accepted by the client")
+
     @property
     def client_phone(self):
         """
@@ -145,18 +152,17 @@ class Booking(models.Model):
 
         return f"{prefix} {number}".strip() if prefix else number
 
-    # Existing provider confirmation flags
+    # --- Provider confirmation and acceptance fields ---
     confirmed_by_provider = models.BooleanField(default=False)
     provider_response_date = models.DateTimeField(null=True, blank=True)
 
-    # --- New fields to store legal acceptance evidence ---
     provider_accepted_terms = models.BooleanField(default=False, help_text="True if provider accepted the terms at confirmation")
     provider_acceptance_datetime = models.DateTimeField(null=True, blank=True)
     provider_acceptance_ip = models.GenericIPAddressField(null=True, blank=True)
     provider_acceptance_user_agent = models.TextField(null=True, blank=True)
     provider_acceptance_text = models.TextField(null=True, blank=True, help_text="Exact text/phrase the provider accepted (snapshot)")
 
-    # Payment fields
+    # --- Payment fields ---
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,

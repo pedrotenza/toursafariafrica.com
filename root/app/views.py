@@ -41,6 +41,19 @@ def safari_detail(request, safari_id):
         post_data['client_phone_prefix'] = post_data.get('client_phone_prefix', '')
         post_data['client_phone_number'] = post_data.get('client_phone_number', '')
 
+        # ✅ Verificar aceptación de términos del cliente
+        accept_terms = post_data.get('accept_terms')
+        if not accept_terms:
+            messages.error(request, "Debes aceptar los términos y condiciones antes de realizar la reserva.")
+            return render(request, 'app/safari_detail.html', {
+                'safari': safari,
+                'highlight_lines': highlight_lines,
+                'error_message': "Debes aceptar los términos y condiciones antes de continuar.",
+                'price_per_person': safari.client_price,
+                'client_terms_url': reverse('client_terms')
+            })
+
+        # Crear la reserva usando el servicio
         booking, error_message = create_booking(post_data, safari, request)
         if error_message:
             return render(request, 'app/safari_detail.html', {
@@ -48,7 +61,19 @@ def safari_detail(request, safari_id):
                 'highlight_lines': highlight_lines,
                 'error_message': error_message,
                 'price_per_person': safari.client_price,
+                'client_terms_url': reverse('client_terms')
             })
+
+        # ✅ Registrar aceptación legal del cliente
+        booking.client_accepted_terms = True
+        booking.client_acceptance_datetime = timezone.now()
+        booking.client_acceptance_ip = get_client_ip(request)
+        booking.client_acceptance_user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
+        booking.client_acceptance_text = (
+            "I have read and accept the Terms and Conditions as the client, "
+            "and I hereby acknowledge and assume all legal responsibility and liabilities derived from my participation."
+        )
+        booking.save()
 
         client_email = booking.client_email if booking else "the client"
         messages.success(
@@ -65,7 +90,7 @@ def safari_detail(request, safari_id):
         'highlight_lines': highlight_lines,
         'error_message': error_message,
         'price_per_person': safari.client_price,
-        'client_terms_url': reverse('client_terms')  # <--- Enlace al template de cliente
+        'client_terms_url': reverse('client_terms')  # enlace al template del cliente
     })
 
 
@@ -90,7 +115,7 @@ def provider_terms_view(request, booking_id=None):
 
 
 # -------------------------------
-# CONFIRMACIÓN DE RESERVA
+# CONFIRMACIÓN DE RESERVA (Proveedor)
 # -------------------------------
 def booking_confirmed(request, booking_number):
     booking = get_object_or_404(Booking, booking_number=booking_number)
@@ -276,3 +301,4 @@ def booking_debug(request, booking_number):
         'participants': participants,
         'debug_info': debug_info
     })
+

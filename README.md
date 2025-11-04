@@ -2,13 +2,15 @@
 Discover Botswana and its wildlife. Book your unforgettable safari adventure today at TourSafariAfrica.com!
 
 
+python manage.py makemigrations
+python manage.py migrate
+
 cd "D:\toursafariafrica.com"
 safari-site-env\Scripts\Activate.ps1
 cd "D:\toursafariafrica.com\root"
 python manage.py runserver
  
-python manage.py makemigrations
-python manage.py migrate
+
 
 
 
