@@ -113,9 +113,11 @@ function toggleSafaris(button) {
     safariLinks.style.display = (safariLinks.style.display === 'block') ? 'none' : 'block';
 }
 
-// Tooltip para enlaces largos en menú lateral
+// Tooltip desktop para sidebar (solo si el texto se corta)
 document.querySelectorAll('.safari-links a').forEach(link => {
     link.addEventListener('mouseenter', () => {
+        if (link.scrollWidth <= link.clientWidth) return; // no mostrar si cabe
+
         const tooltip = document.createElement('div');
         tooltip.className = 'custom-tooltip';
         tooltip.innerText = link.dataset.fulltext;
@@ -127,17 +129,11 @@ document.querySelectorAll('.safari-links a').forEach(link => {
         const windowWidth = window.innerWidth;
 
         let left = rect.left;
-        let top = rect.top - tooltipHeight - 5; // por defecto arriba del enlace
+        let top = rect.top - tooltipHeight - 5;
 
-        // Ajustar horizontalmente si se sale del viewport
-        if (rect.left + tooltipWidth > windowWidth - 10) { 
-            left = windowWidth - tooltipWidth - 10; // deja 10px de margen
-        }
-
-        // Ajustar vertical si se sale de la ventana superior
-        if (top < 0) {
-            top = rect.bottom + 5; // mostrar debajo del enlace
-        }
+        if (rect.left + tooltipWidth > windowWidth - 10) left = windowWidth - tooltipWidth - 10;
+        if (left < 10) left = 10;
+        if (top < 0) top = rect.bottom + 5;
 
         tooltip.style.top = `${top}px`;
         tooltip.style.left = `${left}px`;
@@ -152,6 +148,38 @@ document.querySelectorAll('.safari-links a').forEach(link => {
         }
     });
 });
+
+// Tooltip táctil móvil para menú superior (solo si el texto se corta)
+if ('ontouchstart' in window) {
+    document.querySelectorAll('.region-header .region-btn').forEach(btn => {
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (btn.scrollWidth <= btn.clientWidth) return; // no mostrar si cabe
+
+            document.querySelectorAll('.custom-tooltip').forEach(t => t.remove());
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'custom-tooltip';
+            tooltip.innerText = btn.innerText;
+            document.body.appendChild(tooltip);
+
+            const rect = btn.getBoundingClientRect();
+            const tooltipWidth = tooltip.offsetWidth;
+            const windowWidth = window.innerWidth;
+
+            let left = rect.left;
+            let top = rect.bottom + 5;
+
+            if (rect.left + tooltipWidth > windowWidth - 10) left = windowWidth - tooltipWidth - 10;
+            if (left < 10) left = 10;
+
+            tooltip.style.top = `${top}px`;
+            tooltip.style.left = `${left}px`;
+
+            setTimeout(() => tooltip.remove(), 3000);
+        });
+    });
+}
 </script>
 
 </body>

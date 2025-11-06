@@ -204,4 +204,20 @@ nav.region-header {
 
 @media (max-width: 768px) {
     .safari-menu { display: none; }
+
+    /* Menú superior móvil */
+    nav.region-header {
+        overflow-x: auto; 
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap; 
+    }
+    nav.region-header .region-dropdown {
+        flex: 0 0 auto;
+        margin-right: 10px;
+    }
+    nav.region-header .region-btn {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
