@@ -25,9 +25,11 @@
                     </button>
                     <div class="safari-links">
                         {% for safari in sub.safaris.all %}
-                            <a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a>
+                            <a href="{% url 'safari_detail' safari.id %}" data-fulltext="{{ safari.name }}">
+                                {{ safari.name }}
+                            </a>
                         {% empty %}
-                            <a href="#" class="no-safaris">No safaris available</a>
+                            <a href="#" class="no-safaris" data-fulltext="No safaris available">No safaris available</a>
                         {% endfor %}
                     </div>
                 {% empty %}
@@ -42,6 +44,7 @@
 </nav>
 
 <div class="content-wrapper">
+    <!-- CONTENIDO PRINCIPAL -->
     <div class="main-content">
         {% block content %}
         <section class="welcome-section">
@@ -69,6 +72,7 @@
         {% endblock %}
     </div>
 
+    <!-- MENÚ LATERAL DERECHA -->
     {% block sidebar %}
     <div class="safari-menu">
         <h3><a href="{% url 'home' %}">🏠 Home</a></h3>
@@ -81,9 +85,11 @@
                     </button>
                     <div class="safari-links">
                         {% for safari in sub.safaris.all %}
-                            <a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a>
+                            <a href="{% url 'safari_detail' safari.id %}" data-fulltext="{{ safari.name }}">
+                                {{ safari.name }}
+                            </a>
                         {% empty %}
-                            <a href="#" class="no-safaris">No safaris available</a>
+                            <a href="#" class="no-safaris" data-fulltext="No safaris available">No safaris available</a>
                         {% endfor %}
                     </div>
                 {% empty %}
@@ -98,24 +104,56 @@
 </div>
 
 <script>
+// Toggle subregion safaris
 function toggleSafaris(button) {
     var safariLinks = button.nextElementSibling;
-
-    // Cerrar otros safari-links abiertos
-    document.querySelectorAll('.safari-links').forEach(function(el) {
+    document.querySelectorAll('.safari-links').forEach(el => {
         if(el !== safariLinks) el.style.display = 'none';
     });
-
-    // Mostrar / ocultar el safari-links actual
-    if (safariLinks.style.display === 'block') {
-        safariLinks.style.display = 'none';
-        button.classList.remove('active');
-    } else {
-        safariLinks.style.display = 'block';
-        button.classList.add('active');
-    }
+    safariLinks.style.display = (safariLinks.style.display === 'block') ? 'none' : 'block';
 }
+
+// Tooltip para enlaces largos en menú lateral
+document.querySelectorAll('.safari-links a').forEach(link => {
+    link.addEventListener('mouseenter', () => {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'custom-tooltip';
+        tooltip.innerText = link.dataset.fulltext;
+        document.body.appendChild(tooltip);
+
+        const rect = link.getBoundingClientRect();
+        const tooltipWidth = tooltip.offsetWidth;
+        const tooltipHeight = tooltip.offsetHeight;
+        const windowWidth = window.innerWidth;
+
+        let left = rect.left;
+        let top = rect.top - tooltipHeight - 5; // por defecto arriba del enlace
+
+        // Ajustar horizontalmente si se sale del viewport
+        if (rect.left + tooltipWidth > windowWidth - 10) { 
+            left = windowWidth - tooltipWidth - 10; // deja 10px de margen
+        }
+
+        // Ajustar vertical si se sale de la ventana superior
+        if (top < 0) {
+            top = rect.bottom + 5; // mostrar debajo del enlace
+        }
+
+        tooltip.style.top = `${top}px`;
+        tooltip.style.left = `${left}px`;
+
+        link._tooltip = tooltip;
+    });
+
+    link.addEventListener('mouseleave', () => {
+        if(link._tooltip) {
+            document.body.removeChild(link._tooltip);
+            link._tooltip = null;
+        }
+    });
+});
 </script>
 
 </body>
 </html>
+

@@ -1,80 +1,9 @@
-/* ===== MENÚ LATERAL ===== */
-.subregion-btn {
-    background: none;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-    font-weight: bold;
-    display: block;
-}
-
-.subregion-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.safari-links {
-    display: none;
-    background-color: #2d5a34;
-    padding-left: 20px;
-}
-
-.safari-links.show {
-    display: block;
-}
-
-.safari-links a {
-    color: white;
-    padding: 8px 15px;
-    display: block;      /* Cada enlace ocupa toda la línea */
-    text-decoration: none;
-    white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-}
-
-.safari-links a:hover {
-    background-color: #3a6b41;
-}
-
-.safari-menu {
-    background-color: #2d5a34;
-    padding: 15px;
-    color: white;
-    width: 250px;
-    overflow: visible;
-}
-
-.safari-menu h3 a {
-    color: white;
-    text-decoration: none;
-}
-
-.safari-menu h3 a:hover {
-    text-decoration: underline;
-}
-
-.region-block {
-    margin-top: 15px;
-}
-
-.no-safaris, .no-subregions {
-    color: #ccc;
-}
-
 /* ===== RESET Y BASE ===== */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css');
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-html, body {
-    width: 100%;
-    overflow-x: hidden;
-}
+html, body { width: 100%; overflow-x: hidden; }
 
 body {
     font-family: Arial, sans-serif;
@@ -97,22 +26,9 @@ header {
     z-index: 1100;
 }
 
-header h1 {
-    margin: 0;
-    font-size: 2rem;
-    letter-spacing: 3px;
-}
-
-.header-link {
-    color: inherit;
-    text-decoration: none;
-    cursor: pointer;
-    transition: color .3s;
-}
-
-.header-link:hover {
-    color: #EBD6A4;
-}
+header h1 { margin: 0; font-size: 2rem; letter-spacing: 3px; }
+.header-link { color: inherit; text-decoration: none; cursor: pointer; transition: color .3s; }
+.header-link:hover { color: #EBD6A4; }
 
 /* ===== MENÚ SUPERIOR ===== */
 nav.region-header {
@@ -128,13 +44,9 @@ nav.region-header {
     gap: 10px;
     padding: .6rem;
     z-index: 1000;
-    position: -webkit-sticky; /* compatibilidad Safari */
 }
 
-.region-dropdown {
-    position: relative;
-}
-
+.region-dropdown { position: relative; }
 .region-btn {
     background: none;
     border: none;
@@ -147,10 +59,7 @@ nav.region-header {
     border-radius: 4px;
     transition: background-color .3s;
 }
-
-.region-btn:hover {
-    background-color: rgba(255,255,255,0.2);
-}
+.region-btn:hover { background-color: rgba(255,255,255,0.2); }
 
 .subregions-dropdown {
     display: none;
@@ -171,23 +80,14 @@ nav.region-header {
     display: block;
     text-decoration: none;
     transition: background-color .3s;
-    white-space: nowrap; /* No se corta el texto */
+    white-space: nowrap;
 }
 
-.subregions-dropdown a:hover {
-    background: #2d5a34;
-}
-
-.region-dropdown:hover .subregions-dropdown {
-    display: block;
-}
+.subregions-dropdown a:hover { background: #2d5a34; }
+.region-dropdown:hover .subregions-dropdown { display: block; }
 
 /* ===== ESTRUCTURA PRINCIPAL ===== */
-.content-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-}
+.content-wrapper { display: flex; flex-wrap: wrap; width: 100%; }
 
 .main-content {
     flex: 1;
@@ -195,31 +95,65 @@ nav.region-header {
     width: 100%;
     min-height: 100vh;
     box-sizing: border-box;
+    order: 1;
 }
 
-/* ===== SCROLLBAR ===== */
-.safari-menu::-webkit-scrollbar { width: 8px; }
-.safari-menu::-webkit-scrollbar-track { background: #EDE3C6; }
-.safari-menu::-webkit-scrollbar-thumb { background: #6B8E23; border-radius: 4px; }
-.safari-menu::-webkit-scrollbar-thumb:hover { background: #556B2F; }
-
-/* ===== TIPOGRAFÍA ===== */
-h1, h3, strong { font-family: 'Trebuchet MS', sans-serif; }
-
-h3 {
-    color: #4B3B2A;
-    border-bottom: 2px solid #6B8E23;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    font-size: 1.4em;
+/* ===== MENÚ LATERAL DERECHA ===== */
+.safari-menu {
+    background-color: #2d5a34;
+    padding: 15px;
+    color: white;
+    width: 250px;
+    overflow: visible;
+    flex-shrink: 0;
+    min-height: 100vh;
+    order: 2;
 }
 
-strong {
-    color: #1a472a;
-    margin: 15px 0 5px;
-    font-size: 1.1em;
+.safari-menu h3 a { color: white; text-decoration: none; }
+.safari-menu h3 a:hover { text-decoration: underline; }
+
+.region-block { margin-top: 15px; }
+.subregion-btn {
+    background: none;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
     font-weight: bold;
     display: block;
+}
+.subregion-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+
+.safari-links { display: none; background-color: #2d5a34; padding-left: 20px; }
+.safari-links a {
+    color: white;
+    padding: 8px 15px;
+    display: block;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+.safari-links a:hover { background-color: #3a6b41; }
+
+.no-safaris, .no-subregions { color: #ccc; }
+
+/* ===== TOOLTIP ===== */
+.custom-tooltip {
+    position: fixed;
+    background: #2d5a34;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 9999;
+    pointer-events: none;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
 /* ===== TARJETAS ===== */
@@ -241,24 +175,12 @@ strong {
     transition: transform .3s, background-color .3s;
 }
 
-.card:hover {
-    transform: translateY(-10px);
-    background: #FFF2E0;
-}
+.card:hover { transform: translateY(-10px); background: #FFF2E0; }
 
-.card h3 {
-    font-size: 18px;
-    color: #4B3B2A;
-    margin-bottom: 10px;
-}
+.card h3 { font-size: 18px; color: #4B3B2A; margin-bottom: 10px; }
+.card p { font-size: 14px; color: #5A4A3A; margin-top: 10px; }
 
-.card p {
-    font-size: 14px;
-    color: #5A4A3A;
-    margin-top: 10px;
-}
-
-/* ===== BOTONES ===== */
+/* ===== BOTÓN ===== */
 .booking-btn {
     background: #6B8E23;
     color: #fff;
@@ -271,85 +193,15 @@ strong {
     font-size: 1.1em;
     display: block;
 }
-
 .booking-btn:hover { background: #556B2F; }
 
 /* ===== RESPONSIVO ===== */
-@media (max-width: 1024px) and (min-width: 769px) {
+@media (max-width: 1024px) {
     .content-wrapper { flex-direction: column; }
-    .safari-menu {
-        width: 100%;
-        position: relative;
-        border-left: none;
-        border-top: 4px solid #6B8E23;
-        border-radius: 0;
-        height: auto;
-        padding: 1.2rem;
-        box-shadow: none;
-        order: 2;
-    }
+    .safari-menu { width: 100%; order: 2; min-height: auto; border-top: 4px solid #6B8E23; padding: 1rem; }
     .main-content { order: 1; padding: 2rem; }
 }
 
 @media (max-width: 768px) {
-    header { position: relative; padding: 0.8rem; }
-    header h1 { font-size: 1.5rem; }
-
-    nav.region-header {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 5px;
-        padding: .5rem;
-        top: 0;
-    }
-
-    .region-btn {
-        flex: 1 1 auto;
-        min-width: 80px;
-        max-width: 150px;
-        text-align: center;
-        padding: 6px 10px;
-        font-size: 12px;
-        margin: 2px;
-    }
-
     .safari-menu { display: none; }
-
-    .content-wrapper {
-        display: flex !important;
-        flex-direction: column !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    .main-content, .cards, .card, .welcome-section, .safari-description {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 auto !important;
-        padding: 1rem !important;
-        box-sizing: border-box;
-    }
-
-    .cards {
-        flex-direction: column !important;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .card { max-width: 300px !important; }
-
-    .main-content img,
-    .main-content video,
-    .main-content iframe {
-        max-width: 100% !important;
-        height: auto !important;
-        display: block;
-    }
-}
-
-/* ===== COLOR BLANCO PARA REGIONES EN MENÚ LATERAL ===== */
-.safari-menu strong {
-    color: white;
 }
