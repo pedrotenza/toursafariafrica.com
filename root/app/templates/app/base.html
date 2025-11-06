@@ -1,73 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Safari Booking{% endblock %}</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
-    <style>
-        .subregion-btn {
-            background: none;
-            border: none;
-            color: white;
-            padding: 10px 15px;
-            cursor: pointer;
-            width: 100%;
-            text-align: left;
-            font-weight: bold;
-            display: block;
-        }
-        
-        .subregion-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .safari-links {
-            display: none;
-            background-color: #2d5a34;
-            padding-left: 20px;
-        }
-        
-        .safari-links.show {
-            display: block;
-        }
-        
-        .safari-links a {
-            color: white;
-            padding: 8px 15px;
-            display: block;
-            text-decoration: none;
-        }
-        
-        .safari-links a:hover {
-            background-color: #3a6b41;
-        }
-
-        .safari-menu {
-            background-color: #2d5a34;
-            padding: 15px;
-            color: white;
-            width: 250px;
-        }
-
-        .safari-menu h3 a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .safari-menu h3 a:hover {
-            text-decoration: underline;
-        }
-
-        .region-block {
-            margin-top: 15px;
-        }
-
-        .no-safaris, .no-subregions {
-            color: #ccc;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Safari Booking{% endblock %}</title>
+{% load static %}
+<link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
 </head>
 <body>
 
@@ -85,7 +23,6 @@
                     <button class="subregion-btn" onclick="toggleSafaris(this)">
                         {{ sub.name }} ▶
                     </button>
-                    
                     <div class="safari-links">
                         {% for safari in sub.safaris.all %}
                             <a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a>
@@ -135,16 +72,13 @@
     {% block sidebar %}
     <div class="safari-menu">
         <h3><a href="{% url 'home' %}">🏠 Home</a></h3>
-        
         {% for region in regions %}
             <div class="region-block">
                 <strong>{{ region.name }}</strong>
-                
                 {% for sub in region.subregions.all %}
                     <button class="subregion-btn" onclick="toggleSafaris(this)">
                         {{ sub.name }} ▶
                     </button>
-                    
                     <div class="safari-links">
                         {% for safari in sub.safaris.all %}
                             <a href="{% url 'safari_detail' safari.id %}">{{ safari.name }}</a>
@@ -166,13 +100,19 @@
 <script>
 function toggleSafaris(button) {
     var safariLinks = button.nextElementSibling;
-    
-    if (safariLinks.classList.contains('show')) {
-        safariLinks.classList.remove('show');
-        button.innerHTML = button.textContent.replace('▼', '▶');
+
+    // Cerrar otros safari-links abiertos
+    document.querySelectorAll('.safari-links').forEach(function(el) {
+        if(el !== safariLinks) el.style.display = 'none';
+    });
+
+    // Mostrar / ocultar el safari-links actual
+    if (safariLinks.style.display === 'block') {
+        safariLinks.style.display = 'none';
+        button.classList.remove('active');
     } else {
-        safariLinks.classList.add('show');
-        button.innerHTML = button.textContent.replace('▶', '▼');
+        safariLinks.style.display = 'block';
+        button.classList.add('active');
     }
 }
 </script>
