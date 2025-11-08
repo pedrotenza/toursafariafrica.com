@@ -223,17 +223,19 @@ nav.region-header {
         text-overflow: ellipsis;
     }
     
-    /* Nombres largos de safari en móvil */
+    /* Nombres largos de safari en móvil - UNA SOLA LÍNEA */
     .safari-links a {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: unset;
+        white-space: nowrap; /* Cambiado de 'normal' a 'nowrap' */
+        overflow: hidden; /* Mantener oculto el texto que sobresale */
+        text-overflow: ellipsis; /* Mostrar puntos suspensivos si es muy largo */
         padding: 12px 15px;
         font-size: 1rem;
         line-height: 1.4;
-        word-wrap: break-word;
         width: 100%;
         box-sizing: border-box;
+        /* Remover propiedades que causaban múltiples líneas */
+        word-wrap: normal;
+        word-break: keep-all;
     }
     
     /* Asegurar que los nombres largos ocupen todo el ancho */
@@ -294,5 +296,14 @@ nav.region-header {
     .card {
         width: 100%;
         max-width: 300px;
+    }
+    
+    /* Asegurar que en móvil pequeño también se mantenga una línea */
+    .safari-links a {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9rem;
+        padding: 10px 12px;
     }
 }
