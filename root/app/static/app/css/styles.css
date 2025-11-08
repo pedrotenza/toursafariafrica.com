@@ -207,17 +207,92 @@ nav.region-header {
 
     /* Menú superior móvil */
     nav.region-header {
-        overflow-x: auto; 
+        overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        white-space: nowrap; 
+        white-space: nowrap;
     }
+    
     nav.region-header .region-dropdown {
         flex: 0 0 auto;
         margin-right: 10px;
     }
+    
     nav.region-header .region-btn {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    
+    /* Nombres largos de safari en móvil */
+    .safari-links a {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        padding: 12px 15px;
+        font-size: 1rem;
+        line-height: 1.4;
+        word-wrap: break-word;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Asegurar que los nombres largos ocupen todo el ancho */
+    .subregions-dropdown {
+        width: 100vw;
+        left: 0;
+        right: 0;
+        min-width: unset;
+        border-radius: 0;
+    }
+    
+    /* Ajustar el dropdown para que se expanda completamente */
+    .region-dropdown:hover .subregions-dropdown,
+    .region-dropdown:focus-within .subregions-dropdown {
+        position: fixed;
+        width: 100%;
+        left: 0;
+        top: 60px; /* Ajusta según la altura de tu header */
+    }
+    
+    /* Mejorar la experiencia táctil en móvil */
+    .subregions-dropdown {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .safari-links a {
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .safari-links a:last-child {
+        border-bottom: none;
+    }
+}
+
+/* Estilos adicionales para mejorar la experiencia móvil */
+@media (max-width: 480px) {
+    header h1 { font-size: 1.5rem; }
+    
+    nav.region-header {
+        top: 50px;
+        padding: 0.4rem;
+    }
+    
+    .region-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .cards {
+        gap: 10px;
+    }
+    
+    .card {
+        width: 100%;
+        max-width: 300px;
     }
 }

@@ -20,7 +20,7 @@
             <button class="region-btn">{{ region.name }} ▼</button>
             <div class="subregions-dropdown">
                 {% for sub in region.subregions.all %}
-                    <button class="subregion-btn" onclick="toggleSafaris(this)">
+                    <button class="subregion-btn" data-mobile-toggle>
                         {{ sub.name }} ▶
                     </button>
                     <div class="safari-links">
@@ -80,7 +80,7 @@
             <div class="region-block">
                 <strong>{{ region.name }}</strong>
                 {% for sub in region.subregions.all %}
-                    <button class="subregion-btn" onclick="toggleSafaris(this)">
+                    <button class="subregion-btn" data-mobile-toggle>
                         {{ sub.name }} ▶
                     </button>
                     <div class="safari-links">
@@ -104,82 +104,144 @@
 </div>
 
 <script>
-// Toggle subregion safaris
-function toggleSafaris(button) {
-    var safariLinks = button.nextElementSibling;
-    document.querySelectorAll('.safari-links').forEach(el => {
-        if(el !== safariLinks) el.style.display = 'none';
+// Función mejorada para toggle de safaris en móvil y desktop
+function initSafariMenu() {
+    const subregionBtns = document.querySelectorAll('[data-mobile-toggle]');
+    
+    subregionBtns.forEach(btn => {
+        // Remover event listeners previos para evitar duplicados
+        btn.removeEventListener('click', handleSubregionClick);
+        btn.addEventListener('click', handleSubregionClick);
     });
-    safariLinks.style.display = (safariLinks.style.display === 'block') ? 'none' : 'block';
+
+    // Cerrar menús al hacer click fuera
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.region-dropdown') && !e.target.closest('.safari-menu')) {
+            closeAllMenus();
+        }
+    });
+}
+
+function handleSubregionClick(e) {
+    const btn = e.currentTarget;
+    const safariLinks = btn.nextElementSibling;
+    
+    // Si es móvil, usar comportamiento toggle
+    if (window.innerWidth <= 768) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const isOpen = safariLinks.classList.contains('active');
+        
+        // Cerrar todos los menús primero
+        closeAllMenus();
+        
+        // Abrir el actual si no estaba abierto
+        if (!isOpen) {
+            safariLinks.classList.add('active');
+            safariLinks.style.display = 'block';
+            btn.classList.add('active');
+        }
+    } else {
+        // Comportamiento original para desktop
+        const isVisible = safariLinks.style.display === 'block';
+        closeAllMenus();
+        
+        if (!isVisible) {
+            safariLinks.style.display = 'block';
+        }
+    }
+}
+
+function closeAllMenus() {
+    document.querySelectorAll('.safari-links').forEach(menu => {
+        menu.style.display = 'none';
+        menu.classList.remove('active');
+    });
+    document.querySelectorAll('.subregion-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
 }
 
 // Tooltip desktop para sidebar (solo si el texto se corta)
-document.querySelectorAll('.safari-links a').forEach(link => {
-    link.addEventListener('mouseenter', () => {
-        if (link.scrollWidth <= link.clientWidth) return; // no mostrar si cabe
-
-        const tooltip = document.createElement('div');
-        tooltip.className = 'custom-tooltip';
-        tooltip.innerText = link.dataset.fulltext;
-        document.body.appendChild(tooltip);
-
-        const rect = link.getBoundingClientRect();
-        const tooltipWidth = tooltip.offsetWidth;
-        const tooltipHeight = tooltip.offsetHeight;
-        const windowWidth = window.innerWidth;
-
-        let left = rect.left;
-        let top = rect.top - tooltipHeight - 5;
-
-        if (rect.left + tooltipWidth > windowWidth - 10) left = windowWidth - tooltipWidth - 10;
-        if (left < 10) left = 10;
-        if (top < 0) top = rect.bottom + 5;
-
-        tooltip.style.top = `${top}px`;
-        tooltip.style.left = `${left}px`;
-
-        link._tooltip = tooltip;
-    });
-
-    link.addEventListener('mouseleave', () => {
-        if(link._tooltip) {
-            document.body.removeChild(link._tooltip);
-            link._tooltip = null;
-        }
-    });
-});
-
-// Tooltip táctil móvil para menú superior (solo si el texto se corta)
-if ('ontouchstart' in window) {
-    document.querySelectorAll('.region-header .region-btn').forEach(btn => {
-        btn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (btn.scrollWidth <= btn.clientWidth) return; // no mostrar si cabe
-
-            document.querySelectorAll('.custom-tooltip').forEach(t => t.remove());
+function initTooltips() {
+    document.querySelectorAll('.safari-links a').forEach(link => {
+        link.addEventListener('mouseenter', (e) => {
+            if (link.scrollWidth <= link.clientWidth) return;
 
             const tooltip = document.createElement('div');
             tooltip.className = 'custom-tooltip';
-            tooltip.innerText = btn.innerText;
+            tooltip.innerText = link.dataset.fulltext;
             document.body.appendChild(tooltip);
 
-            const rect = btn.getBoundingClientRect();
+            const rect = link.getBoundingClientRect();
             const tooltipWidth = tooltip.offsetWidth;
+            const tooltipHeight = tooltip.offsetHeight;
             const windowWidth = window.innerWidth;
 
             let left = rect.left;
-            let top = rect.bottom + 5;
+            let top = rect.top - tooltipHeight - 5;
 
             if (rect.left + tooltipWidth > windowWidth - 10) left = windowWidth - tooltipWidth - 10;
             if (left < 10) left = 10;
+            if (top < 0) top = rect.bottom + 5;
 
             tooltip.style.top = `${top}px`;
             tooltip.style.left = `${left}px`;
 
-            setTimeout(() => tooltip.remove(), 3000);
+            link._tooltip = tooltip;
+        });
+
+        link.addEventListener('mouseleave', () => {
+            if(link._tooltip) {
+                document.body.removeChild(link._tooltip);
+                link._tooltip = null;
+            }
         });
     });
+
+    // Tooltip táctil móvil para menú superior (solo si el texto se corta)
+    if ('ontouchstart' in window) {
+        document.querySelectorAll('.region-header .region-btn').forEach(btn => {
+            btn.addEventListener('touchstart', (e) => {
+                if (btn.scrollWidth <= btn.clientWidth) return;
+
+                document.querySelectorAll('.custom-tooltip').forEach(t => t.remove());
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'custom-tooltip';
+                tooltip.innerText = btn.innerText.replace(' ▼', '');
+                document.body.appendChild(tooltip);
+
+                const rect = btn.getBoundingClientRect();
+                const tooltipWidth = tooltip.offsetWidth;
+                const windowWidth = window.innerWidth;
+
+                let left = rect.left;
+                let top = rect.bottom + 5;
+
+                if (rect.left + tooltipWidth > windowWidth - 10) left = windowWidth - tooltipWidth - 10;
+                if (left < 10) left = 10;
+
+                tooltip.style.top = `${top}px`;
+                tooltip.style.left = `${left}px`;
+
+                setTimeout(() => tooltip.remove(), 2000);
+            });
+        });
+    }
 }
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    initSafariMenu();
+    initTooltips();
+});
+
+// Re-inicializar si cambia el tamaño de la ventana
+window.addEventListener('resize', function() {
+    initSafariMenu();
+});
 </script>
 
 </body>
