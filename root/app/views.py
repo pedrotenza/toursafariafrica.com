@@ -301,4 +301,3 @@ def booking_debug(request, booking_number):
         'participants': participants,
         'debug_info': debug_info
     })
-

@@ -127,40 +127,21 @@ class Booking(models.Model):
     client_phone_number = models.CharField(max_length=20, blank=True, null=True)
 
     # --- NUEVOS CAMPOS: aceptación de términos del cliente ---
-    client_accepted_terms = models.BooleanField(default=False, help_text="True if client accepted terms and conditions")
+    client_accepted_terms = models.BooleanField(default=False)
     client_acceptance_datetime = models.DateTimeField(null=True, blank=True)
     client_acceptance_ip = models.GenericIPAddressField(null=True, blank=True)
     client_acceptance_user_agent = models.TextField(null=True, blank=True)
-    client_acceptance_text = models.TextField(null=True, blank=True, help_text="Snapshot of terms text accepted by the client")
-
-    @property
-    def client_phone(self):
-        """
-        Returns the full phone number including the prefix.
-        - Removes leading 0 from the number if present.
-        - Ensures the prefix starts with '+' if it is numeric.
-        """
-        if not self.client_phone_number:
-            return "N/A"
-
-        number = self.client_phone_number.lstrip("0")
-        prefix = (self.client_phone_prefix or "").strip()
-
-        # Add '+' if the prefix is numeric and doesn't start with '+'
-        if prefix and not prefix.startswith("+") and prefix.replace("+", "").isdigit():
-            prefix = f"+{prefix.lstrip('+')}"
-
-        return f"{prefix} {number}".strip() if prefix else number
+    client_acceptance_text = models.TextField(null=True, blank=True)
 
     # --- Provider confirmation and acceptance fields ---
     confirmed_by_provider = models.BooleanField(default=False)
     provider_response_date = models.DateTimeField(null=True, blank=True)
 
-    provider_accepted_terms = models.BooleanField(default=False, help_text="True if provider accepted the terms at confirmation")
+    provider_accepted_terms = models.BooleanField(default=False)
     provider_acceptance_datetime = models.DateTimeField(null=True, blank=True)
     provider_acceptance_ip = models.GenericIPAddressField(null=True, blank=True)
     provider_acceptance_user_agent = models.TextField(null=True, blank=True)
-    provider_acceptance_text = models.TextField(null=True, blank=True, help_text="Exact text/phrase the provider accepted (snapshot)")
+    provider_acceptance_text = models.TextField(null=True, blank=True)
 
     # --- Payment fields ---
     payment_status = models.CharField(
@@ -178,18 +159,36 @@ class Booking(models.Model):
     payment_method = models.CharField(
         max_length=50,
         blank=True,
-        null=True,
-        help_text="Payment method used"
+        null=True
     )
     transaction_id = models.CharField(
         max_length=100,
         blank=True,
-        null=True,
-        help_text="Transaction ID"
+        null=True
     )
 
     def __str__(self):
         return f"{self.client_name} – {self.date}"
+
+    @property
+    def client_full_name(self):
+        """
+        Retorna el nombre completo del cliente para compatibilidad con templates.
+        """
+        return self.client_name
+
+    @property
+    def client_phone(self):
+        """
+        Retorna el teléfono completo con prefijo.
+        """
+        if not self.client_phone_number:
+            return "N/A"
+        number = self.client_phone_number.lstrip("0")
+        prefix = (self.client_phone_prefix or "").strip()
+        if prefix and not prefix.startswith("+") and prefix.replace("+", "").isdigit():
+            prefix = f"+{prefix.lstrip('+')}"
+        return f"{prefix} {number}".strip() if prefix else number
 
     def clean(self):
         if self.number_of_people < self.safari.min_people:
@@ -269,8 +268,7 @@ class HomePage(models.Model):
     hero_video = models.FileField(
         upload_to='homepage/hero/videos/',
         blank=True,
-        null=True,
-        help_text="Upload a video file (recommended .mp4 format)"
+        null=True
     )
     why_choose_title = models.CharField(max_length=200)
 
