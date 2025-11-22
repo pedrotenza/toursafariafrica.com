@@ -44,38 +44,15 @@
 </nav>
 
 <div class="content-wrapper">
-    <!-- CONTENIDO PRINCIPAL -->
     <div class="main-content">
         {% block content %}
-        <section class="welcome-section">
-            <h1>Safari Adventure</h1>
-            <p>Vive la experiencia salvaje de tu vida en el corazón de África</p>
-        </section>
-
-        <section class="safari-detail">
-            <div class="safari-info">
-                <div class="info-card"><h3>Duración</h3><p>5 días / 4 noches</p></div>
-                <div class="info-card"><h3>Precio</h3><p>Desde $1,200 USD</p></div>
-                <div class="info-card"><h3>Grupo</h3><p>Máx. 12 personas</p></div>
-            </div>
-            <div class="safari-description">
-                <h3>Descubre la vida salvaje</h3>
-                <p>Embárcate en una aventura inolvidable a través de las vastas llanuras del Serengeti...</p>
-                <div class="cards">
-                    <div class="card"><h3>Big Five</h3><p>Posibilidad de avistar los 5 grandes</p></div>
-                    <div class="card"><h3>Fotografía</h3><p>Oportunidades únicas para fotografía</p></div>
-                    <div class="card"><h3>Guías Expertos</h3><p>Guiados por expertos locales</p></div>
-                </div>
-                <button class="booking-btn">Reservar Ahora</button>
-            </div>
-        </section>
         {% endblock %}
     </div>
 
-    <!-- MENÚ LATERAL DERECHA -->
     {% block sidebar %}
     <div class="safari-menu">
         <h3><a href="{% url 'home' %}">🏠 Home</a></h3>
+
         {% for region in regions %}
             <div class="region-block">
                 <strong>{{ region.name }}</strong>
@@ -83,6 +60,7 @@
                     <button class="subregion-btn" data-mobile-toggle>
                         {{ sub.name }} ▶
                     </button>
+
                     <div class="safari-links">
                         {% for safari in sub.safaris.all %}
                             <a href="{% url 'safari_detail' safari.id %}" data-fulltext="{{ safari.name }}">
@@ -103,18 +81,59 @@
     {% endblock %}
 </div>
 
+{% if request %}
+<div class="mobile-share">
+  <a href="https://wa.me/?text={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn whatsapp" aria-label="Compartir en WhatsApp">
+    <img src="{% static 'icons/whatsapp.svg' %}" alt="WhatsApp" />
+  </a>
+
+  <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn telegram" aria-label="Compartir en Telegram">
+    <img src="{% static 'icons/telegram.svg' %}" alt="Telegram" />
+  </a>
+
+  <a href="mailto:?subject=Regarde ça&amp;body={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn email" aria-label="Compartir por Email">
+    <img src="{% static 'icons/email.svg' %}" alt="Email" />
+  </a>
+
+  <button class="share-btn native-share" aria-label="Share via device apps">
+    <img src="{% static 'icons/share.svg' %}" alt="Share" />
+  </button>
+</div>
+{% endif %}
+
+<style>
+.mobile-share {
+  display: none;
+  position: fixed;
+  bottom: 5px;
+  right: 15px;
+  gap: 8px;
+  z-index: 1000;
+  flex-direction: row;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .mobile-share {
+    display: flex;
+  }
+  .mobile-share .share-btn img {
+    width: 28px;
+    height: 28px;
+  }
+}
+</style>
+
 <script>
-// Función mejorada para toggle de safaris en móvil y desktop
+// --- MENÚ SAFARI COMO SIEMPRE ---
 function initSafariMenu() {
     const subregionBtns = document.querySelectorAll('[data-mobile-toggle]');
     
     subregionBtns.forEach(btn => {
-        // Remover event listeners previos para evitar duplicados
         btn.removeEventListener('click', handleSubregionClick);
         btn.addEventListener('click', handleSubregionClick);
     });
 
-    // Cerrar menús al hacer click fuera
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.region-dropdown') && !e.target.closest('.safari-menu')) {
             closeAllMenus();
@@ -125,28 +144,24 @@ function initSafariMenu() {
 function handleSubregionClick(e) {
     const btn = e.currentTarget;
     const safariLinks = btn.nextElementSibling;
-    
-    // Si es móvil, usar comportamiento toggle
+
     if (window.innerWidth <= 768) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const isOpen = safariLinks.classList.contains('active');
-        
-        // Cerrar todos los menús primero
         closeAllMenus();
-        
-        // Abrir el actual si no estaba abierto
+
         if (!isOpen) {
             safariLinks.classList.add('active');
             safariLinks.style.display = 'block';
             btn.classList.add('active');
         }
+
     } else {
-        // Comportamiento original para desktop
         const isVisible = safariLinks.style.display === 'block';
         closeAllMenus();
-        
+
         if (!isVisible) {
             safariLinks.style.display = 'block';
         }
@@ -163,7 +178,7 @@ function closeAllMenus() {
     });
 }
 
-// Tooltip desktop para sidebar (solo si el texto se corta)
+// --- TOOLTIP ORIGINAL ---
 function initTooltips() {
     document.querySelectorAll('.safari-links a').forEach(link => {
         link.addEventListener('mouseenter', (e) => {
@@ -193,52 +208,34 @@ function initTooltips() {
         });
 
         link.addEventListener('mouseleave', () => {
-            if(link._tooltip) {
+            if (link._tooltip) {
                 document.body.removeChild(link._tooltip);
                 link._tooltip = null;
             }
         });
     });
-
-    // Tooltip táctil móvil para menú superior (solo si el texto se corta)
-    if ('ontouchstart' in window) {
-        document.querySelectorAll('.region-header .region-btn').forEach(btn => {
-            btn.addEventListener('touchstart', (e) => {
-                if (btn.scrollWidth <= btn.clientWidth) return;
-
-                document.querySelectorAll('.custom-tooltip').forEach(t => t.remove());
-
-                const tooltip = document.createElement('div');
-                tooltip.className = 'custom-tooltip';
-                tooltip.innerText = btn.innerText.replace(' ▼', '');
-                document.body.appendChild(tooltip);
-
-                const rect = btn.getBoundingClientRect();
-                const tooltipWidth = tooltip.offsetWidth;
-                const windowWidth = window.innerWidth;
-
-                let left = rect.left;
-                let top = rect.bottom + 5;
-
-                if (rect.left + tooltipWidth > windowWidth - 10) left = windowWidth - tooltipWidth - 10;
-                if (left < 10) left = 10;
-
-                tooltip.style.top = `${top}px`;
-                tooltip.style.left = `${left}px`;
-
-                setTimeout(() => tooltip.remove(), 2000);
-            });
-        });
-    }
 }
 
-// Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     initSafariMenu();
     initTooltips();
+
+    const nativeShareBtn = document.querySelector('.share-btn.native-share');
+    if (nativeShareBtn && navigator.share) {
+        nativeShareBtn.addEventListener('click', async () => {
+            try {
+                await navigator.share({
+                    title: document.title,
+                    text: 'Mira este safari increíble!',
+                    url: window.location.href
+                });
+            } catch (err) { console.error('Error:', err); }
+        });
+    } else if (nativeShareBtn) {
+        nativeShareBtn.style.display = 'none';
+    }
 });
 
-// Re-inicializar si cambia el tamaño de la ventana
 window.addEventListener('resize', function() {
     initSafariMenu();
 });
@@ -246,5 +243,3 @@ window.addEventListener('resize', function() {
 
 </body>
 </html>
-
-
