@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="50" height="50">
-  <circle cx="16" cy="16" r="16" fill="#EA4335"/>
-  <path fill="#fff" d="M4 10v12h24V10H4zm12 7l-12-9h24l-12 9z"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <mask id="m"><rect width="32" height="32" fill="white"/><path fill="black" d="M26.667 9.333H5.333c-1.467 0-2.667 1.2-2.667 2.667v10.667c0 1.467 1.2 2.667 2.667 2.667h21.333c1.467 0 2.667-1.2 2.667-2.667V12c0-1.467-1.2-2.667-2.667-2.667zm0 2.667v1.387l-10.667 6.4-10.667-6.4V12h21.333z"/></mask>
+  </defs>
+  <circle cx="16" cy="16" r="16" fill="#EA4335" mask="url(#m)"/>
+</svg> 
