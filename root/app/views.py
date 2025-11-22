@@ -90,7 +90,7 @@ def safari_detail(request, safari_id):
         'highlight_lines': highlight_lines,
         'error_message': error_message,
         'price_per_person': safari.client_price,
-        'client_terms_url': reverse('client_terms')  # enlace al template del cliente
+        'client_terms_url': reverse('client_terms')
     })
 
 
@@ -98,9 +98,6 @@ def safari_detail(request, safari_id):
 # VISTA DE TÉRMINOS DEL CLIENTE
 # -------------------------------
 def client_terms_view(request):
-    """
-    Muestra el template de Terms and Conditions para el cliente
-    """
     return render(request, 'app/client_terms_and_conditions.html')
 
 
@@ -130,6 +127,11 @@ def booking_confirmed(request, booking_number):
         action = request.POST.get('action')
 
         if action == 'confirm':
+            # ✅ Prevenir doble confirmación
+            if booking.confirmed_by_provider:
+                messages.warning(request, "Esta reserva ya ha sido confirmada por el proveedor.")
+                return redirect('booking_confirmed', booking_number=booking_number)
+
             accept_terms = request.POST.get('accept_terms')
             if not accept_terms:
                 messages.error(request, "Debes aceptar los términos y condiciones para confirmar la reserva.")
@@ -184,6 +186,11 @@ def confirm_booking(request, booking_id):
     total_provider_amount = booking.safari.provider_price * booking.number_of_people
     
     if request.method == 'POST':
+        # ✅ Prevenir doble confirmación
+        if booking.confirmed_by_provider:
+            messages.warning(request, "Esta reserva ya ha sido confirmada por el proveedor.")
+            return redirect('booking_confirmed', booking_number=booking.booking_number)
+
         accept_terms = request.POST.get('accept_terms')
         if not accept_terms:
             messages.error(request, "Debes aceptar los términos y condiciones para confirmar la reserva.")
