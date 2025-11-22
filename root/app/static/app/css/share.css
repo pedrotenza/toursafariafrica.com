@@ -1,0 +1,43 @@
+/* ================= BARRA DE COMPARTIR SOLO MÓVIL ================= */
+.share-bar {
+    display: none; /* oculto por defecto (sobremesa) */
+}
+
+@media screen and (max-width: 768px) {
+    .share-bar {
+        display: flex; /* visible solo en móvil */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #fff;
+        border-top: 1px solid #ccc;
+        padding: 8px 0;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .share-bar a,
+    .share-bar button {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        text-decoration: none;
+        color: #444;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .share-bar img {
+        width: 26px;
+        height: 26px;
+    }
+}
+
+/* ================= OTROS ESTILOS DE LA WEB ================= */
+/* header, main-content, sidebar, etc. */

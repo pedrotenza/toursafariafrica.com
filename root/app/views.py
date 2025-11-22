@@ -181,7 +181,8 @@ def booking_confirmed(request, booking_number):
 def confirm_booking(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
     participants = Participant.objects.filter(booking=booking)
-
+    total_provider_amount = booking.safari.provider_price * booking.number_of_people
+    
     if request.method == 'POST':
         accept_terms = request.POST.get('accept_terms')
         if not accept_terms:
@@ -210,7 +211,8 @@ def confirm_booking(request, booking_id):
     return render(request, 'app/confirm_booking.html', {
         'booking': booking,
         'participants': participants,
-        'provider_terms_url': reverse('provider_terms', args=[booking.id])
+        'provider_terms_url': reverse('provider_terms', args=[booking.id]),
+        'total_provider_amount': total_provider_amount
     })
 
 
