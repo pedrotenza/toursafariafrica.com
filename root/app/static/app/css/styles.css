@@ -1,0 +1,223 @@
+/* ===== RESET Y BASE ===== */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { width: 100%; overflow-x: hidden; }
+
+body {
+    font-family: Arial, sans-serif;
+    background: #F4EAD5;
+    color: #2B2B2B;
+    line-height: 1.5;
+    font-size: 16px;
+}
+
+/* ===== HEADER ===== */
+header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    background: #1a472a;
+    color: #fff;
+    text-align: center;
+    z-index: 1100;
+}
+
+header h1 { margin: 0; font-size: 2rem; letter-spacing: 3px; }
+.header-link { color: inherit; text-decoration: none; cursor: pointer; transition: color .3s; }
+.header-link:hover { color: #EBD6A4; }
+
+/* ===== MENÚ SUPERIOR ===== */
+nav.region-header {
+    position: sticky;
+    top: 60px;
+    width: 100%;
+    background: #000;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: .6rem;
+    z-index: 1000;
+}
+
+.region-dropdown { position: relative; }
+.region-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    padding: 8px 15px;
+    margin: 0 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: 4px;
+    transition: background-color .3s;
+}
+.region-btn:hover { background-color: rgba(255,255,255,0.2); }
+
+.subregions-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #1a472a;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    border-radius: 4px;
+    padding: 10px 0;
+    z-index: 1200;
+}
+
+.subregions-dropdown a {
+    color: #fff;
+    padding: 8px 16px;
+    display: block;
+    text-decoration: none;
+    transition: background-color .3s;
+    white-space: nowrap;
+}
+
+.subregions-dropdown a:hover { background: #2d5a34; }
+.region-dropdown:hover .subregions-dropdown { display: block; }
+
+/* ===== ESTRUCTURA PRINCIPAL ===== */
+.content-wrapper { display: flex; flex-wrap: wrap; width: 100%; }
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    order: 1;
+}
+
+/* ===== MENÚ LATERAL DERECHA ===== */
+.safari-menu {
+    background-color: #2d5a34;
+    padding: 15px;
+    color: white;
+    width: 250px;
+    overflow: visible;
+    flex-shrink: 0;
+    min-height: 100vh;
+    order: 2;
+}
+
+.safari-menu h3 a { color: white; text-decoration: none; }
+.safari-menu h3 a:hover { text-decoration: underline; }
+
+.region-block { margin-top: 15px; }
+.subregion-btn {
+    background: none;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-weight: bold;
+    display: block;
+}
+.subregion-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+
+.safari-links { display: none; background-color: #2d5a34; padding-left: 20px; }
+.safari-links a {
+    color: white;
+    padding: 8px 15px;
+    display: block;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+.safari-links a:hover { background-color: #3a6b41; }
+
+.no-safaris, .no-subregions { color: #ccc; }
+
+/* ===== TOOLTIP ===== */
+.custom-tooltip {
+    position: fixed;
+    background: #2d5a34;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 9999;
+    pointer-events: none;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* ===== TARJETAS ===== */
+.cards {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.card {
+    width: 220px;
+    padding: 20px;
+    background: #FFFDF8;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform .3s, background-color .3s;
+}
+
+.card:hover { transform: translateY(-10px); background: #FFF2E0; }
+
+.card h3 { font-size: 18px; color: #4B3B2A; margin-bottom: 10px; }
+.card p { font-size: 14px; color: #5A4A3A; margin-top: 10px; }
+
+/* ===== BOTÓN ===== */
+.booking-btn {
+    background: #6B8E23;
+    color: #fff;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background .3s;
+    margin: 0 auto;
+    font-size: 1.1em;
+    display: block;
+}
+.booking-btn:hover { background: #556B2F; }
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 1024px) {
+    .content-wrapper { flex-direction: column; }
+    .safari-menu { width: 100%; order: 2; min-height: auto; border-top: 4px solid #6B8E23; padding: 1rem; }
+    .main-content { order: 1; padding: 2rem; }
+}
+
+@media (max-width: 768px) {
+    .safari-menu { display: none; }
+
+    /* Menú superior móvil */
+    nav.region-header {
+        overflow-x: auto; 
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap; 
+    }
+    nav.region-header .region-dropdown {
+        flex: 0 0 auto;
+        margin-right: 10px;
+    }
+    nav.region-header .region-btn {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
