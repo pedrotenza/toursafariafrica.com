@@ -112,6 +112,12 @@ class Booking(models.Model):
         ('canceled', 'Canceled'),
     ]
 
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
     booking_number = models.CharField(max_length=10, unique=True, blank=True, null=True)
     safari = models.ForeignKey(
         Safari,
@@ -125,6 +131,12 @@ class Booking(models.Model):
     client_email = models.EmailField()
     client_phone_prefix = models.CharField(max_length=5, blank=True, null=True)
     client_phone_number = models.CharField(max_length=20, blank=True, null=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
 
     # --- NUEVOS CAMPOS: aceptación de términos del cliente ---
     client_accepted_terms = models.BooleanField(default=False)

@@ -81,27 +81,24 @@
     {% endblock %}
 </div>
 
-{% if request %}
+<!-- BOTONES DE COMPARTIR - SIEMPRE EN HTML, CSS SE ENCARGA DE MOSTRAR/OCULTAR -->
 <div class="mobile-share">
-  <a href="https://wa.me/?text={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn whatsapp" aria-label="Compartir en WhatsApp">
+  <a href="https://wa.me/?text={{ request.build_absolute_uri|default:''|urlencode }}" target="_blank" class="share-btn whatsapp" aria-label="Compartir en WhatsApp">
     <img src="{% static 'icons/whatsapp.svg' %}" alt="WhatsApp" />
   </a>
 
-  <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn telegram" aria-label="Compartir en Telegram">
+  <a href="https://t.me/share/url?url={{ request.build_absolute_uri|default:''|urlencode }}" target="_blank" class="share-btn telegram" aria-label="Compartir en Telegram">
     <img src="{% static 'icons/telegram.svg' %}" alt="Telegram" />
   </a>
 
-  <a href="mailto:?subject=Regarde ça&amp;body={{ request.build_absolute_uri|urlencode }}" target="_blank" class="share-btn email" aria-label="Compartir por Email">
+  <a href="mailto:?subject=Regarde ça&amp;body={{ request.build_absolute_uri|default:''|urlencode }}" target="_blank" class="share-btn email" aria-label="Compartir por Email">
     <img src="{% static 'icons/email.svg' %}" alt="Email" />
   </a>
 
   <button class="share-btn native-share" aria-label="Share via device apps">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-      <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.03-.47-.09-.7l7.05-4.11c.53.5 1.23.81 2 .81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.81 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.81 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/>
-    </svg>
+    <img src="{% static 'icons/share.svg' %}" alt="Share" />
   </button>
 </div>
-{% endif %}
 
 <style>
 .mobile-share {
@@ -126,7 +123,6 @@
   text-decoration: none;
 }
 
-.mobile-share .share-btn svg,
 .mobile-share .share-btn img {
   width: 28px;
   height: 28px;
@@ -134,8 +130,6 @@
   transition: opacity 0.2s ease;
 }
 
-.mobile-share .share-btn:hover svg,
-.mobile-share .share-btn:focus svg,
 .mobile-share .share-btn:hover img,
 .mobile-share .share-btn:focus img {
   opacity: 1;
