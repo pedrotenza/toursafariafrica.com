@@ -54,7 +54,6 @@ class DateRangeFilter(admin.SimpleListFilter):
             return queryset.filter(date__range=[today, today + timedelta(days=365)])
         return queryset
 
-
 # ===============================
 # Formularios personalizados
 # ===============================
@@ -90,7 +89,6 @@ class ParticipantForm(forms.ModelForm):
             'pattern': '[0-9]*',
         })
 
-
 # ===============================
 # Inlines
 # ===============================
@@ -114,7 +112,6 @@ class ParticipantInline(admin.TabularInline):
     verbose_name = "Participant"
     verbose_name_plural = "Participants"
 
-
 # ===============================
 # ADMIN: Safari
 # ===============================
@@ -125,7 +122,6 @@ class SafariAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     inlines = [SafariImageInline, SafariItineraryItemInline]
 
-
 # ===============================
 # ADMIN: Booking
 # ===============================
@@ -135,10 +131,11 @@ class BookingAdmin(admin.ModelAdmin):
 
     list_display = (
         'booking_number', 'activity_date', 'safari_name', 'booking_date',
-        'provider_name', 'provider_accept_terms', 'client_accept_terms',
-        'provider_response', 'participants_count', 'participants_ages',
-        'participants_nationalities', 'price', 'provider_earnings',
-        'your_profit', 'client_payment', 'client_unit_price',
+        'provider_name', 'status_colored',  # Estado con colores + fecha/hora en negro
+        'provider_accept_terms', 'client_accept_terms',
+        'participants_count', 'participants_ages', 'participants_nationalities',
+        'price', 'provider_earnings', 'your_profit',
+        'client_payment', 'client_unit_price',
         'client_name', 'client_email', 'formatted_client_phone',
     )
 
@@ -231,6 +228,25 @@ class BookingAdmin(admin.ModelAdmin):
     # ==========================
     # Columnas personalizadas
     # ==========================
+    def status_colored(self, obj):
+        # Color según el estado
+        color = "orange"
+        text = obj.status.capitalize()
+        if obj.status == 'confirmed':
+            color = "green"
+        elif obj.status == 'cancelled':
+            color = "red"
+
+        # Fecha/hora en negro (provider_response_date)
+        date_str = obj.provider_response_date.strftime('%d/%m/%Y %H:%M') if obj.provider_response_date else "—"
+
+        return format_html(
+            '<b><span style="color:{};">{}</span></b> <span style="color:black;">{}</span>',
+            color, text, date_str
+        )
+    status_colored.short_description = 'Status'
+
+    # Métodos originales de columnas
     def activity_date(self, obj):
         return obj.date.strftime('%d/%m/%Y') if obj.date else '—'
     activity_date.short_description = 'Date'
@@ -278,7 +294,6 @@ class BookingAdmin(admin.ModelAdmin):
     provider_accept_terms.short_description = "Provider Accepted Terms"
 
     def client_accept_terms(self, obj):
-        """Botón que lleva al detalle de aceptación del cliente."""
         if obj.client_accepted_terms:
             url = f"/admin/app/booking/{obj.id}/client_acceptance_info/"
             return format_html(
@@ -288,14 +303,6 @@ class BookingAdmin(admin.ModelAdmin):
         else:
             return format_html('<span style="color: orange;">⏳ Pending</span>')
     client_accept_terms.short_description = "Client Accepted Terms"
-
-    def provider_response(self, obj):
-        if obj.provider_response_date:
-            response_time = obj.provider_response_date.strftime('%d/%m/%Y %H:%M')
-            if obj.confirmed_by_provider:
-                return format_html('<span style="color: green;">{} (Accepted)</span>', response_time)
-        return format_html('<span style="color: orange;">Pending</span>')
-    provider_response.short_description = 'Prov Resp'
 
     def price(self, obj):
         if obj.safari and obj.safari.provider_price:
@@ -355,7 +362,6 @@ class BookingAdmin(admin.ModelAdmin):
     class Media:
         css = {'all': ('app/css/admin_custom.css?v=2.1',)}
         js = ('app/js/admin_custom.js?v=2.1',)
-
 
 # ===============================
 # Otros modelos

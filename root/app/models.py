@@ -184,16 +184,10 @@ class Booking(models.Model):
 
     @property
     def client_full_name(self):
-        """
-        Retorna el nombre completo del cliente para compatibilidad con templates.
-        """
         return self.client_name
 
     @property
     def client_phone(self):
-        """
-        Retorna el teléfono completo con prefijo.
-        """
         if not self.client_phone_number:
             return "N/A"
         number = self.client_phone_number.lstrip("0")

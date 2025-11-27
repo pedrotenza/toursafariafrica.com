@@ -118,20 +118,23 @@ def booking_confirmed(request, booking_number):
     booking = get_object_or_404(Booking, booking_number=booking_number)
     participants = Participant.objects.filter(booking=booking)
 
-    # ✅ Control basado en el estado
-    if booking.status == 'confirmed':
-        messages.info(request, "Esta reserva ya ha sido confirmada.")
-    elif booking.status == 'cancelled':
-        messages.info(request, "Esta reserva ha sido cancelada.")
-        return redirect('booking_cancelled', booking_number=booking.booking_number)
-
     total_client_amount = booking.safari.client_price * booking.number_of_people
     total_provider_amount = booking.safari.provider_price * booking.number_of_people
     is_provider_view = request.GET.get('provider', False) or not request.user.is_authenticated
 
+    # Redirecciones según estado actual
+    if booking.status == 'cancelled':
+        messages.info(request, "Esta reserva ha sido cancelada.")
+        return redirect('booking_cancelled', booking_number=booking.booking_number)
+    elif booking.status == 'confirmed':
+        messages.info(request, "Esta reserva ya ha sido confirmada.")
+
     if request.method == 'POST':
         action = request.POST.get('action')
 
+        # -------------------
+        # Confirmación
+        # -------------------
         if action == 'confirm' and booking.status == 'pending':
             accept_terms = request.POST.get('accept_terms')
             if not accept_terms:
@@ -144,7 +147,7 @@ def booking_confirmed(request, booking_number):
             booking.provider_acceptance_user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
             booking.provider_acceptance_text = (
                 "I have read and accept the Terms and Conditions, and as the provider, "
-                "I hereby acknowledge and assume all legal responsibility and liabilities arising from the activity."
+                "I hereby acknowledge and assume all legal responsibility and liabilities."
             )
             booking.confirmed_by_provider = True
             booking.provider_response_date = timezone.now()
@@ -157,6 +160,9 @@ def booking_confirmed(request, booking_number):
             else:
                 messages.error(request, "❌ Error al confirmar la reserva.")
 
+        # -------------------
+        # Cancelación
+        # -------------------
         elif action == 'cancel' and booking.status == 'pending':
             booking.status = 'cancelled'
             booking.save()
@@ -171,7 +177,6 @@ def booking_confirmed(request, booking_number):
 
     context = {
         'booking': booking,
-        'booking_number': booking_number,
         'participants': participants,
         'total_client_amount': total_client_amount,
         'total_provider_amount': total_provider_amount,
@@ -179,27 +184,23 @@ def booking_confirmed(request, booking_number):
         'provider_terms_url': reverse('provider_terms', args=[booking.id])
     }
 
-    # Mostrar directamente template según estado
-    if booking.status == 'confirmed':
-        return render(request, 'app/booking_confirmed.html', context)
-    elif booking.status == 'cancelled':
-        return redirect('booking_cancelled', booking_number=booking.booking_number)
-
     return render(request, 'app/booking_confirmed.html', context)
 
 
+# -------------------------------
+# Confirmación individual (POST)
+# -------------------------------
 def confirm_booking(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
     participants = Participant.objects.filter(booking=booking)
     total_provider_amount = booking.safari.provider_price * booking.number_of_people
 
-    # ✅ Control basado en estado
-    if booking.status == 'confirmed':
-        messages.info(request, "Esta reserva ya ha sido confirmada.")
+    if booking.status != 'pending':
+        if booking.status == 'confirmed':
+            messages.info(request, "Esta reserva ya ha sido confirmada.")
+        else:
+            messages.info(request, "Esta reserva ha sido cancelada.")
         return redirect('booking_confirmed', booking_number=booking.booking_number)
-    elif booking.status == 'cancelled':
-        messages.info(request, "Esta reserva ha sido cancelada.")
-        return redirect('booking_cancelled', booking_number=booking.booking_number)
 
     if request.method == 'POST':
         accept_terms = request.POST.get('accept_terms')
@@ -213,7 +214,7 @@ def confirm_booking(request, booking_id):
         booking.provider_acceptance_user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown')
         booking.provider_acceptance_text = (
             "I have read and accept the Terms and Conditions, and as the provider, "
-            "I hereby acknowledge and assume all legal responsibility and liabilities arising from the activity."
+            "I hereby acknowledge and assume all legal responsibility and liabilities."
         )
         booking.confirmed_by_provider = True
         booking.provider_response_date = timezone.now()
@@ -225,6 +226,7 @@ def confirm_booking(request, booking_id):
             messages.success(request, "Reserva confirmada correctamente.")
         else:
             messages.error(request, "No se pudo confirmar la reserva.")
+
         return redirect('booking_confirmed', booking_number=booking.booking_number)
 
     return render(request, 'app/confirm_booking.html', {
@@ -235,17 +237,20 @@ def confirm_booking(request, booking_id):
     })
 
 
+# -------------------------------
+# Cancelación de reserva (POST)
+# -------------------------------
 def cancel_booking(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
     participants = Participant.objects.filter(booking=booking)
 
-    # ✅ Control basado en el estado
-    if booking.status == 'cancelled':
-        messages.info(request, "Esta reserva ya ha sido cancelada.")
-        return redirect('booking_cancelled', booking_number=booking.booking_number)
-    elif booking.status == 'confirmed':
-        messages.info(request, "Esta reserva ya ha sido confirmada y no puede cancelarse aquí.")
-        return redirect('booking_confirmed', booking_number=booking.booking_number)
+    if booking.status != 'pending':
+        if booking.status == 'cancelled':
+            messages.info(request, "Esta reserva ya ha sido cancelada.")
+            return redirect('booking_cancelled', booking_number=booking.booking_number)
+        else:
+            messages.info(request, "Esta reserva ya ha sido confirmada y no puede cancelarse aquí.")
+            return redirect('booking_confirmed', booking_number=booking.booking_number)
 
     if request.method == 'POST':
         booking.status = 'cancelled'
@@ -254,10 +259,9 @@ def cancel_booking(request, booking_id):
         html_result = cancel_booking_service(booking_id)
         if "❌ Booking canceled successfully" in html_result:
             messages.success(request, "Reserva cancelada correctamente.")
-            return redirect('booking_cancelled', booking_number=booking.booking_number)
         else:
             messages.error(request, "No se pudo cancelar la reserva.")
-            return redirect('booking_confirmed', booking_number=booking.booking_number)
+        return redirect('booking_cancelled', booking_number=booking.booking_number)
 
     return render(request, 'app/cancel_booking.html', {
         'booking': booking,

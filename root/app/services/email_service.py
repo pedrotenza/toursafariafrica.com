@@ -101,6 +101,10 @@ def send_booking_request_email(booking, request, participants_data=None):
         _________________________________________
         Amount to Be Paid:       {(booking.safari.client_price * booking.number_of_people):.2f}
             </pre>
+            <p><b>Client Details:</b></p>
+            <p>Name: {booking.client_name}<br>
+            Email: {booking.client_email}<br>
+            Phone: {booking.client_phone}</p>
             <p>Participants Details:</p>
             {participants_table}
             <p>Your booking awaits operator confirmation. We'll contact you once confirmed — no payment will be processed until then.</p>
@@ -293,6 +297,11 @@ Number of Participants:  {booking.number_of_people}
 _________________________________________
 Amount Paid:             {(booking.safari.client_price * booking.number_of_people):.2f}
             </pre>
+            <p><b>Client Details:</b></p>
+            <p>Name: {booking.client_name}<br>
+            Email: {booking.client_email}<br>
+            Phone: {booking.client_phone}</p>
+  
             <p><strong>Participants Details:</strong></p>
             {participants_table}
             {provider_contact}
@@ -437,7 +446,7 @@ def send_booking_cancellation_emails(booking):
                 <html>
                   <body>
                     <p>Dear {booking.client_name},</p>
-                    <p>Your booking has been canceled:</p>
+                    <p>Your booking request {booking.booking_number} has been canceled:</p>
                     <p style="font-size: 20px; font-weight: bold;">{booking.safari.name}</p>
                     <pre>
 Date:          {booking.date.strftime("%d-%m-%Y")}
