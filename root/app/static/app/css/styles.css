@@ -205,19 +205,29 @@ nav.region-header {
 @media (max-width: 768px) {
     .safari-menu { display: none; }
 
-    /* Menú superior móvil */
+    /* Header fijo y menú superior multilínea */
+    header.main-header { position: fixed; top: 0; left: 0; width: 100%; z-index: 1100; }
     nav.region-header {
-        overflow-x: auto; 
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap; 
+        position: fixed;
+        top: auto; /* ajustado por JS */
+        left: 0;
+        width: 100%;
+        z-index: 1090;
+        display: flex;
+        flex-wrap: wrap;
+        overflow-x: hidden;
+        white-space: normal;
+        background: #000;
+        padding: 5px 0;
     }
-    nav.region-header .region-dropdown {
-        flex: 0 0 auto;
-        margin-right: 10px;
-    }
-    nav.region-header .region-btn {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+}
+
+/* ===== MENÚ LATERAL FIJO SOLO EN DESKTOP ===== */
+@media (min-width: 1025px) {
+    .safari-menu {
+        position: sticky;
+        top: 60px; /* altura del header */
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
     }
 }

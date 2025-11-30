@@ -6,6 +6,39 @@
 <title>{% block title %}Safari Booking{% endblock %}</title>
 {% load static %}
 <link rel="stylesheet" href="{% static 'app/css/styles.css' %}">
+<style>
+/* ===== AJUSTE MÓVIL: HEADER Y MENÚ SUPERIOR FIJOS Y MULTILÍNEA ===== */
+@media (max-width: 768px) {
+    /* Header fijo */
+    header.main-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1100;
+    }
+
+    /* Menú superior fijo debajo del header, permitir varias líneas */
+    nav.region-header {
+        position: fixed;
+        top: auto; /* será calculado por JS */
+        left: 0;
+        width: 100%;
+        z-index: 1090;
+        display: flex;
+        flex-wrap: wrap; /* permite varias líneas */
+        overflow-x: hidden; /* quitar scroll horizontal */
+        white-space: normal; /* permite saltos de línea */
+        background: #000; /* aseguramos que fondo sea sólido */
+        padding: 5px 0;
+    }
+
+    /* Ocultar menú lateral en móvil */
+    .safari-menu {
+        display: none;
+    }
+}
+</style>
 </head>
 <body>
 
@@ -45,8 +78,7 @@
 
 <div class="content-wrapper">
     <div class="main-content">
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </div>
 
     {% block sidebar %}
@@ -81,7 +113,6 @@
     {% endblock %}
 </div>
 
-<!-- BOTONES DE COMPARTIR - SIEMPRE EN HTML, CSS SE ENCARGA DE MOSTRAR/OCULTAR -->
 <div class="mobile-share">
   <a href="https://wa.me/?text={{ request.build_absolute_uri|default:''|urlencode }}" target="_blank" class="share-btn whatsapp" aria-label="Compartir en WhatsApp">
     <img src="{% static 'icons/whatsapp.svg' %}" alt="WhatsApp" />
@@ -143,7 +174,7 @@
 </style>
 
 <script>
-// --- MENÚ SAFARI COMO SIEMPRE ---
+// --- MENÚ SAFARI ---
 function initSafariMenu() {
     const subregionBtns = document.querySelectorAll('[data-mobile-toggle]');
     
@@ -196,7 +227,7 @@ function closeAllMenus() {
     });
 }
 
-// --- TOOLTIP ORIGINAL ---
+// --- TOOLTIP ---
 function initTooltips() {
     document.querySelectorAll('.safari-links a').forEach(link => {
         link.addEventListener('mouseenter', (e) => {
@@ -251,8 +282,22 @@ function initNativeShare() {
             }
         });
     } else if (nativeShareBtn) {
-        // Si el navegador no soporta la API de compartir, ocultar el botón
         nativeShareBtn.style.display = 'none';
+    }
+}
+
+// --- AJUSTE MARGIN CONTENIDO MÓVIL ---
+function adjustContentMargin() {
+    if (window.innerWidth <= 768) {
+        const header = document.querySelector('header.main-header');
+        const nav = document.querySelector('nav.region-header');
+        const content = document.querySelector('.content-wrapper');
+
+        nav.style.top = header.offsetHeight + 'px';
+        const totalHeight = header.offsetHeight + nav.offsetHeight;
+        content.style.marginTop = totalHeight + 'px';
+    } else {
+        document.querySelector('.content-wrapper').style.marginTop = '';
     }
 }
 
@@ -260,10 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initSafariMenu();
     initTooltips();
     initNativeShare();
+    adjustContentMargin();
 });
 
 window.addEventListener('resize', function() {
     initSafariMenu();
+    adjustContentMargin();
 });
 </script>
 
