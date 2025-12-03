@@ -21,28 +21,33 @@
 <!-- 🟠 ¿Por qué elegirnos? -->
 <section style="padding: 40px 20px; background-color: #fff4e6;">
   <h2 style="text-align: center; margin-bottom: 30px;">{{ homepage.why_choose_title }}</h2>
-  <div class="cards">
-
-    <div class="card">
-      <h3> {{ homepage.title_1 }}</h3>
-      <p>{{ homepage.description_1 }}</p>
+  
+  <div class="feature-cards">
+    
+    <!-- Cuadro 1 -->
+    <div class="feature-card">
+      <h3>{{ homepage.title_1 }}</h3>
+      <div class="feature-text">{{ homepage.description_1 }}</div>
     </div>
-
-    <div class="card">
-      <h3> {{ homepage.title_2 }}</h3>
-      <p>{{ homepage.description_2 }}</p>
+    
+    <!-- Cuadro 2 -->
+    <div class="feature-card">
+      <h3>{{ homepage.title_2 }}</h3>
+      <div class="feature-text">{{ homepage.description_2 }}</div>
     </div>
-
-    <div class="card">
-      <h3> {{ homepage.title_3 }}</h3>
-      <p>{{ homepage.description_3 }}</p>
+    
+    <!-- Cuadro 3 -->
+    <div class="feature-card">
+      <h3>{{ homepage.title_3 }}</h3>
+      <div class="feature-text">{{ homepage.description_3 }}</div>
     </div>
-
-    <div class="card">
-      <h3> {{ homepage.title_4 }}</h3>
-      <p>{{ homepage.description_4 }}</p>
+    
+    <!-- Cuadro 4 -->
+    <div class="feature-card">
+      <h3>{{ homepage.title_4 }}</h3>
+      <div class="feature-text">{{ homepage.description_4 }}</div>
     </div>
-
+    
   </div>
 </section>
 
@@ -56,5 +61,187 @@
   {% endif %}
 </section>
 
-{% endblock %}
+<style>
+/* ===== ESTILOS CORREGIDOS - 2 CUADROS EN MÓVIL ===== */
 
+/* CONTAINER PRINCIPAL */
+.feature-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin: 30px auto;
+    padding: 0 15px;
+    max-width: 1200px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 📱 MÓVIL POR DEFECTO: 2 CUADROS POR LÍNEA */
+.feature-card {
+    flex: 0 0 calc(50% - 7.5px); /* 2 EN LÍNEA - ESTO ES LO MÁS IMPORTANTE */
+    box-sizing: border-box;
+    min-height: 300px;
+    padding: 18px 12px;
+    background: white;
+    border: 2px solid #6B8E23;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: none; /* Quitamos max-width para móvil */
+}
+
+/* 💻 DESKTOP: 4 CUADROS EN LÍNEA */
+@media screen and (min-width: 769px) {
+    .feature-card {
+        flex: 0 0 calc(25% - 15px); /* 4 EN LÍNEA */
+        min-height: 350px;
+        padding: 25px 20px;
+        max-width: 280px; /* Solo en desktop */
+    }
+    
+    .feature-cards {
+        gap: 20px;
+        padding: 0 20px;
+    }
+}
+
+/* 📱 MÓVIL PEQUEÑO (481px-768px): MANTENER 2 CUADROS */
+@media screen and (max-width: 768px) and (min-width: 481px) {
+    .feature-card {
+        flex: 0 0 calc(50% - 10px); /* SIGUE SIENDO 2 EN LÍNEA */
+        min-height: 320px;
+        padding: 20px 15px;
+    }
+    
+    .feature-cards {
+        gap: 20px;
+        padding: 0 20px;
+    }
+}
+
+/* 📱 MÓVIL MUY PEQUEÑO (≤480px): MANTENER 2 CUADROS PERO MÁS COMPACTO */
+@media screen and (max-width: 480px) {
+    .feature-card {
+        flex: 0 0 calc(50% - 5px); /* SIGUE SIENDO 2 EN LÍNEA */
+        min-height: 280px;
+        padding: 15px 10px;
+        max-width: none; /* Asegurar que no tenga max-width */
+    }
+    
+    .feature-cards {
+        gap: 10px;
+        padding: 0 10px;
+    }
+}
+
+/* 📱 MÓVIL EXTRA PEQUEÑO (≤360px): MANTENER 2 CUADROS PERO MÁS AJUSTADO */
+@media screen and (max-width: 360px) {
+    .feature-card {
+        flex: 0 0 calc(50% - 5px); /* SIGUE SIENDO 2 EN LÍNEA */
+        min-height: 260px;
+        padding: 12px 8px;
+    }
+    
+    .feature-cards {
+        gap: 10px;
+        padding: 0 8px;
+    }
+}
+
+/* ===== ESTILOS DE TEXTO ===== */
+.feature-card h3 {
+    color: #1a472a;
+    margin: 0 0 12px 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    line-height: 1.3;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-height: 3em;
+}
+
+.feature-text {
+    color: #5A4A3A;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    overflow: hidden;
+    overflow-y: auto;
+    max-height: 180px;
+    padding: 5px 0;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+/* Scrollbar styling */
+.feature-text::-webkit-scrollbar {
+    width: 3px;
+}
+
+.feature-text::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.feature-text::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+/* Efecto hover */
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 18px rgba(0,0,0,0.15);
+    border-color: #1a472a;
+}
+
+/* AJUSTES PARA DESKTOP */
+@media screen and (min-width: 769px) {
+    .feature-card h3 {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+    
+    .feature-text {
+        font-size: 0.9rem;
+        max-height: 200px;
+    }
+}
+
+/* PANTALLAS MUY GRANDES */
+@media screen and (min-width: 1400px) {
+    .feature-cards {
+        max-width: 1400px;
+    }
+    
+    .feature-card {
+        min-height: 380px;
+        max-width: 300px;
+    }
+    
+    .feature-text {
+        font-size: 0.95rem;
+        max-height: 220px;
+    }
+}
+</style>
+
+{% endblock %}
